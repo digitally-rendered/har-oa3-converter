@@ -1,0 +1,62 @@
+[tool.poetry]
+name = "har-oa3-converter"
+version = "0.1.0"
+description = "Convert HAR (HTTP Archive) files to OpenAPI 3 specification"
+authors = ["Your Name <your.email@example.com>"]
+readme = "README.md"
+repository = "https://github.com/yourusername/har-oa3-converter"
+license = "MIT"
+packages = [{include = "har_oa3_converter"}]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+
+[tool.poetry.dependencies]
+python = ">=3.8,<4.0"
+pyyaml = "^6.0"
+jsonschema = "^4.17.3"
+typing-extensions = "^4.7.1"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.3.1"
+black = "^23.3.0"
+isort = "^5.12.0"
+mypy = "^1.3.0"
+pylint = "^2.17.4"
+pytest-cov = "^4.1.0"
+tox = "^4.6.0"
+
+[tool.poetry.scripts]
+har2oas = "har_oa3_converter.cli:main"
+api-convert = "har_oa3_converter.format_cli:main"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+
+[tool.pylint.messages_control]
+disable = ["C0111", "C0103", "C0330", "C0326"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
