@@ -1,0 +1,5 @@
+API endpoints should use JSON_SCHEMA documents in a file to interpret the parameter objects. this should be in a central file
+this application is meant to be stateless and request responses should be self contained
+the accept header should be used to determine the output format\
+the content-type header should be used to determine the input format
+content type and schema validation are interdependent

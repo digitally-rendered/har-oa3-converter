@@ -23,6 +23,10 @@ python = ">=3.8,<4.0"
 pyyaml = "^6.0"
 jsonschema = "^4.17.3"
 typing-extensions = "^4.7.1"
+fastapi = "^0.110.0"
+uvicorn = {extras = ["standard"], version = "^0.27.0"}
+python-multipart = "^0.0.9"
+httpx = "^0.28.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.3.1"
@@ -32,14 +36,30 @@ mypy = "^1.3.0"
 pylint = "^2.17.4"
 pytest-cov = "^4.1.0"
 tox = "^4.6.0"
+pytest-xdist = "^3.6.1"
+pytest-html = "^4.1.1"
+pytest-json-report = "^1.5.0"
+schemathesis = "^3.39.14"
 
 [tool.poetry.scripts]
-har2oas = "har_oa3_converter.cli:main"
-api-convert = "har_oa3_converter.format_cli:main"
+har2oa3 = "har_oa3_converter.cli.har_to_oas_cli:main"
+api-convert = "har_oa3_converter.cli.format_cli:main"
+api-server = "har_oa3_converter.api.server:main"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+# Code coverage configuration
+addopts = "--cov=har_oa3_converter --cov-report=xml:reports/coverage.xml --cov-report=html:reports/coverage --cov-report=term-missing"
+
+# General test settings
+testpaths = ["tests"]
+norecursedirs = [".git", "__pycache__", "*.egg-info", ".pytest_cache", "dist", "build"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
 
 [tool.black]
 line-length = 88
@@ -58,5 +78,4 @@ disallow_incomplete_defs = true
 [tool.pylint.messages_control]
 disable = ["C0111", "C0103", "C0330", "C0326"]
 
-[tool.pytest.ini_options]
-testpaths = ["tests"]
+# Pytest configuration already defined above
