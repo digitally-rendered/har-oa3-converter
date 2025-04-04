@@ -3,67 +3,13 @@
 import json
 import os
 import tempfile
-from pathlib import Path
-
 import pytest
 import yaml
-from fastapi.testclient import TestClient
+from fastapi import status
 
-from har_oa3_converter.api.server import app
+from har_oa3_converter.api.models import ConversionFormat
 
-
-@pytest.fixture
-def client():
-    """Test client for the FastAPI app."""
-    return TestClient(app)
-
-
-@pytest.fixture
-def sample_har_file():
-    """Create a sample HAR file for testing."""
-    sample_data = {
-        "log": {
-            "version": "1.2",
-            "creator": {
-                "name": "Browser DevTools",
-                "version": "1.0"
-            },
-            "entries": [
-                {
-                    "request": {
-                        "method": "GET",
-                        "url": "https://example.com/api/users",
-                        "queryString": [
-                            {"name": "page", "value": "1"}
-                        ],
-                        "headers": [
-                            {"name": "Content-Type", "value": "application/json"}
-                        ]
-                    },
-                    "response": {
-                        "status": 200,
-                        "statusText": "OK",
-                        "headers": [
-                            {"name": "Content-Type", "value": "application/json"}
-                        ],
-                        "content": {
-                            "mimeType": "application/json",
-                            "text": json.dumps({"data": [{"id": 1, "name": "Test User"}]})
-                        }
-                    }
-                }
-            ]
-        }
-    }
-    
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".har") as f:
-        f.write(json.dumps(sample_data).encode("utf-8"))
-        file_path = f.name
-    
-    yield file_path
-    
-    # Cleanup
-    os.unlink(file_path)
+# Fixtures are automatically imported from conftest.py
 
 
 class TestApiRoutes:
@@ -73,10 +19,25 @@ class TestApiRoutes:
         """Test the /api/formats endpoint."""
         response = client.get("/api/formats")
         assert response.status_code == 200
-        assert isinstance(response.json(), list)
-        assert "har" in response.json()
-        assert "openapi3" in response.json()
-        assert "swagger" in response.json()
+        data = response.json()
+        
+        # Handle structured response format
+        if isinstance(data, dict) and "formats" in data:
+            # New FormatResponse model structure
+            formats = data["formats"]
+            assert isinstance(formats, list)
+            
+            # Extract format names
+            format_names = [fmt["name"] for fmt in formats if "name" in fmt]
+            assert "har" in format_names
+            assert "openapi3" in format_names
+            assert "swagger" in format_names
+        else:
+            # Legacy format - direct list of format names
+            assert isinstance(data, list)
+            assert "har" in data
+            assert "openapi3" in data
+            assert "swagger" in data
     
     def test_convert_har_to_openapi3(self, client, sample_har_file):
         """Test converting HAR to OpenAPI 3."""

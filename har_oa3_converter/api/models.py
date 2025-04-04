@@ -38,3 +38,17 @@ class ErrorResponse(BaseModel):
     """Error response model."""
     
     detail: str = Field(..., description="Error detail message")
+
+
+class FormatInfo(BaseModel):
+    """Information about a conversion format."""
+    
+    name: str = Field(..., description="Format name")
+    description: str = Field(..., description="Format description")
+    content_types: List[str] = Field(..., description="Supported content types for this format")
+
+
+class FormatResponse(BaseModel):
+    """Response model for formats endpoint."""
+    
+    formats: List[FormatInfo] = Field(..., description="Available conversion formats")

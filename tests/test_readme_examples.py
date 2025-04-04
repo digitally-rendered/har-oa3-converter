@@ -453,5 +453,6 @@ class TestReadmeModelsAndSchemas:
         # For ConversionResponse, we need to know its actual required fields
         # Let's check if it has the basic API-related attributes we'd expect
         # Since we don't know the exact structure, best to skip actual instantiation
-        assert hasattr(ConversionResponse, '__fields__') or hasattr(ConversionResponse, 'model_fields')
+        # Check for model fields using the modern Pydantic V2 attribute name
+        assert hasattr(ConversionResponse, 'model_fields')
 

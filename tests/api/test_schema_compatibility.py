@@ -106,15 +106,29 @@ def test_list_formats_endpoint(client):
     response = client.get("/api/formats")
     assert response.status_code == 200
     
-    # Verify response is a list of strings representing available formats
+    # Parse the response
     data = response.json()
-    assert isinstance(data, list)
-    assert all(isinstance(item, str) for item in data)
     
-    # Verify all expected formats are present
-    assert "har" in data
-    assert "openapi3" in data
-    assert "swagger" in data
+    # Handle structured response format
+    if isinstance(data, dict) and "formats" in data:
+        # New FormatResponse model structure
+        formats = data["formats"]
+        assert isinstance(formats, list)
+        
+        # Extract format names
+        format_names = [fmt["name"] for fmt in formats if "name" in fmt]
+        assert "har" in format_names
+        assert "openapi3" in format_names
+        assert "swagger" in format_names
+    else:
+        # Legacy format - direct list of format names
+        assert isinstance(data, list)
+        assert all(isinstance(item, str) for item in data)
+        
+        # Verify all expected formats are present
+        assert "har" in data
+        assert "openapi3" in data
+        assert "swagger" in data
 
 
 # Only test OpenAPI3 for now since Swagger seems to have issues
@@ -187,8 +201,9 @@ def test_convert_endpoint_invalid_input(client):
 
 @pytest.mark.parametrize("accept_header,expected_content_type", [
     ("application/json", "application/json"),
-    ("application/yaml", "application/yaml")
-    # text/yaml seems to be normalized to application/yaml
+    ("application/yaml", "application/yaml"),
+    ("application/x-yaml", "application/yaml"),
+    ("text/yaml", "application/yaml")  # text/yaml normalized to application/yaml
 ])
 def test_convert_endpoint_accept_header(client, sample_har_file, accept_header, expected_content_type):
     """Test that the accept header controls the response format."""

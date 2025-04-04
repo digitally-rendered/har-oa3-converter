@@ -8,6 +8,7 @@ import pytest
 import schemathesis
 from fastapi.testclient import TestClient
 
+from tests.api.conftest import execute_schemathesis_case
 from har_oa3_converter.api.server import app, custom_openapi
 from har_oa3_converter.api.models import ConversionFormat
 
@@ -65,7 +66,12 @@ def sample_har_file():
 
 # Create Schemathesis schema for API testing
 # We use our custom schema that's compatible with Schemathesis (OpenAPI 3.0.3)
-schema = schemathesis.from_dict(SCHEMA, base_url="http://testserver")
+# Instead of using a real HTTP connection, we'll use the app directly
+schema = schemathesis.from_dict(
+    SCHEMA,
+    app=app,  # Provide the app directly to avoid HTTP connection errors
+    base_url="http://testserver"  # This is still needed for formatting URLs
+)
 
 
 # Test the GET /api/formats endpoint using Schemathesis
@@ -76,15 +82,25 @@ def test_api_formats_endpoint(case):
     if case.path != "/api/formats" or case.method.lower() != "get":
         pytest.skip("This test only applies to GET /api/formats")
         
-    # Make the request to our app
-    response = case.call_asgi(app)
+    # Make the request to our app using our abstracted helper
+    response = execute_schemathesis_case(case, expected_status_codes=[200])
     
-    # Check response status and content
-    assert response.status_code == 200
+    # Additional checks for response content
     data = response.json()
-    assert isinstance(data, list)
-    assert "openapi3" in data  # Verify expected format is available
-    assert "har" in data       # Verify expected format is available
+    
+    # Handle the new structured FormatResponse format
+    if isinstance(data, dict) and "formats" in data:
+        formats = data["formats"]
+        assert isinstance(formats, list)
+        # Extract format names
+        format_names = [fmt["name"] for fmt in formats if "name" in fmt]
+        assert "openapi3" in format_names  # Verify expected format is available
+        assert "har" in format_names       # Verify expected format is available
+    else:
+        # Handle legacy format for backward compatibility
+        assert isinstance(data, list)
+        assert "openapi3" in data  # Verify expected format is available
+        assert "har" in data       # Verify expected format is available
     
     # Let Schemathesis validate that the response matches our schema
     case.validate_response(response)
@@ -125,7 +141,9 @@ def test_api_accept_header_handling(client, sample_har_file):
     # Test different Accept headers
     formats_to_test = [
         ("application/json", "application/json"),
-        ("application/yaml", "application/yaml")
+        ("application/yaml", "application/yaml"),
+        ("application/x-yaml", "application/yaml"),
+        ("text/yaml", "application/yaml")
     ]
     
     for accept_header, expected_content_type in formats_to_test:

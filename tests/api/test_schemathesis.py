@@ -8,6 +8,7 @@ import pytest
 import schemathesis
 from fastapi.testclient import TestClient
 
+from tests.api.conftest import execute_schemathesis_case
 from har_oa3_converter.api.server import app, custom_openapi
 from har_oa3_converter.api.models import ConversionFormat
 
@@ -66,12 +67,15 @@ def sample_har_file():
 # Create Schemathesis schema for API testing
 # Note: We're not using app.openapi() directly because it creates OpenAPI 3.1.0 schemas
 # that Schemathesis doesn't fully support
-schema = schemathesis.from_dict(SCHEMA, base_url="http://testserver")
+schema = schemathesis.from_dict(
+    SCHEMA,
+    app=app,  # Provide the app directly to avoid HTTP connection errors
+    base_url="http://testserver"  # This is still needed for formatting URLs
+)
 
 
 # Test the GET /api/formats endpoint
 @pytest.mark.skip(reason="Compatibility issues with current schemathesis version")
-@pytest.mark.only_backends("asyncio")  # Ensure we're using the right ASGI backend
 def test_api_formats_endpoint():
     """Test that the formats endpoint returns valid data and conforms to our schema."""
     # Create explicit test using the client fixture directly
@@ -120,7 +124,9 @@ def test_api_accept_header_handling(client, sample_har_file):
     # Test different Accept headers
     formats_to_test = [
         ("application/json", "application/json"),
-        ("application/yaml", "application/yaml")
+        ("application/yaml", "application/yaml"),
+        ("application/x-yaml", "application/yaml"),
+        ("text/yaml", "application/yaml")
     ]
     
     for accept_header, expected_content_type in formats_to_test:
@@ -198,11 +204,15 @@ def client():
 
 # Test the /api/formats endpoint using property-based testing
 @pytest.mark.skip(reason="Compatibility issues with current schemathesis version")
-@schema.parametrize(endpoint="/api/formats")
+@schema.parametrize()  # Use without deprecated 'endpoint' parameter
 def test_list_formats(case):
     """Test that the formats endpoint returns a valid list of formats."""
-    response = case.call_asgi(app)
-    assert response.status_code == 200
+    # Filter for specific endpoint if needed
+    if case.path != "/api/formats" or case.method.lower() != "get":
+        pytest.skip("This test only applies to GET /api/formats")
+        
+    # Use our abstracted helper to execute the test case
+    response = execute_schemathesis_case(case, expected_status_codes=[200])
     
     # Verify response is a list of strings representing available formats
     data = response.json()
@@ -322,8 +332,8 @@ def test_schema_validation_all_endpoints(case):
     if content_types and "multipart/form-data" in content_types:
         pytest.skip("Skipping multipart/form-data endpoint as it requires special handling")
     
-    # For all other endpoints, run standard validation
-    response = case.call_asgi(app)
+    # For all other endpoints, run standard validation using our abstracted helper
+    response = execute_schemathesis_case(case)
     
-    # Verify the status code is a success or valid error code
-    assert response.status_code in [200, 400, 404, 422]
+    # Additional validation can be done here if needed
+    # The helper already checks for expected status codes

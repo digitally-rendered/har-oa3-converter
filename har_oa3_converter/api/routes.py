@@ -2,10 +2,11 @@
 
 import json
 import tempfile
+import yaml
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Header, Path, Query, Request, UploadFile
-from fastapi.responses import Response, StreamingResponse
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Header, Path, Query, Request, Response, UploadFile
+from fastapi.responses import StreamingResponse
 
 from har_oa3_converter.utils.file_handler import FileHandler
 
@@ -14,6 +15,8 @@ from har_oa3_converter.api.models import (
     ConversionOptions,
     ConversionResponse,
     ErrorResponse,
+    FormatInfo,
+    FormatResponse,
 )
 from har_oa3_converter.converters.format_converter import (
     convert_file,
@@ -58,15 +61,90 @@ def get_conversion_options(
     "/formats",
     summary="List available formats",
     description="Get a list of all available conversion formats.",
-    response_model=List[str],
+    response_model=FormatResponse,
+    responses={
+        200: {
+            "description": "List of available formats",
+            "content": {
+                "application/json": {},
+                "application/yaml": {},
+            },
+        },
+        406: {
+            "description": "Not Acceptable",
+            "model": ErrorResponse,
+        },
+    },
 )
-async def list_formats() -> List[str]:
+async def list_formats(
+    request: Request,
+    accept: Optional[str] = Header(None, description="Accept header for response format"),
+) -> Response:
     """List available conversion formats.
     
+    Args:
+        request: FastAPI request object
+        accept: Accept header for response format
+        
     Returns:
-        List of available formats
+        Response containing available formats in the requested format
     """
-    return get_available_formats()
+    # Get the available formats
+    available_formats = get_available_formats()
+    
+    # Create structured format information
+    format_info = []
+    for fmt in available_formats:
+        # Add detailed information for each format
+        content_types = []
+        if fmt == "openapi3" or fmt == "swagger":
+            content_types = ["application/json", "application/yaml"]
+            description = f"OpenAPI {'3.0' if fmt == 'openapi3' else '2.0'} specification"
+        elif fmt == "har":
+            content_types = ["application/json"]
+            description = "HTTP Archive (HAR) format"
+        elif fmt == "postman":
+            content_types = ["application/json"]
+            description = "Postman Collection format"
+        else:
+            content_types = ["application/json"]
+            description = f"{fmt.capitalize()} format"
+        
+        format_info.append(FormatInfo(
+            name=fmt,
+            description=description,
+            content_types=content_types
+        ))
+    
+    # Create the response object
+    response_data = FormatResponse(formats=format_info)
+    
+    # Determine content type with proper priority hierarchy
+    content_type = "application/json"  # Default
+    
+    # Check Accept header first
+    request_accept = request.headers.get("accept", "")
+    if request_accept:
+        if "yaml" in request_accept.lower() or "yml" in request_accept.lower():
+            content_type = "application/yaml"
+    
+    # Query parameter accept takes highest priority
+    if accept:
+        if "yaml" in accept.lower() or "yml" in accept.lower():
+            content_type = "application/yaml"
+        elif "json" in accept.lower():
+            content_type = "application/json"
+    
+    # Handle YAML format if requested
+    if content_type == "application/yaml":
+        # Convert Pydantic model to dict, then to YAML for clean serialization
+        response_dict = response_data.model_dump()
+        # Now convert the dict to YAML
+        yaml_content = yaml.dump(response_dict, default_flow_style=False, sort_keys=False)
+        return Response(content=yaml_content, media_type="application/yaml")
+    
+    # Default JSON response
+    return response_data
 
 
 @router.post(
@@ -187,37 +265,27 @@ async def convert_document(
             **conversion_options
         )
         
-        # Get the Accept header from the request
-        request_accept = None
-        request_headers = request.headers
-        if request_headers:
-            request_accept = request_headers.get("accept") or request_headers.get("Accept")
+        # Determine response content type with proper priority hierarchy
+        # 1. Set default based on file extension
+        if "json" in output_suffix:
+            content_type = "application/json"
+        else:
+            content_type = "application/yaml"  # Use consistent YAML media type
         
-        # Determine response content type based on Accept header or target format
-        if accept:
-            # Explicit accept parameter takes highest precedence
-            content_type = accept
-        elif request_accept:
-            # Request Accept header takes next precedence
+        # 2. Override with Accept header if present
+        request_accept = request.headers.get("accept", "")
+        if request_accept:
             if "json" in request_accept.lower():
                 content_type = "application/json"
             elif "yaml" in request_accept.lower() or "yml" in request_accept.lower():
                 content_type = "application/yaml"
-            else:
-                # Default based on file extension
-                content_type = "application/json" if output_suffix.endswith(".json") else "application/yaml"
-        elif "json" in output_suffix:
-            content_type = "application/json"
-        else:
-            # For tests requesting application/json via headers, default to JSON
-            # This makes sure we honor the test's Accept header
-            content_type = "application/yaml"
-            
-        # Ensure we honor the Accept header from the test client
-        if request_headers and "accept" in request_headers and "json" in request_headers["accept"].lower():
-            content_type = "application/json"
-        elif accept and "json" in accept.lower():
-            content_type = "application/json"
+        
+        # 3. Query parameter 'accept' has highest priority (overrides everything else)
+        if accept:
+            if "json" in accept.lower() or accept == "application/json":
+                content_type = "application/json"
+            elif "yaml" in accept.lower() or "yml" in accept.lower():
+                content_type = "application/yaml"
         
         # Read the converted file and prepare the response
         with open(output_path, "r") as f:
@@ -235,21 +303,21 @@ async def convert_document(
                 content=json.dumps(result, indent=2) if isinstance(result, dict) else converted_content,
                 media_type="application/json"
             )
-        elif "application/yaml" in content_type or "application/x-yaml" in content_type:
+        elif "application/yaml" in content_type or "text/yaml" in content_type:
             # Return YAML response
             if output_suffix == ".json":
                 # Convert JSON to YAML using FileHandler
                 if not isinstance(result, dict):
                     result = FileHandler.load(output_path)
-                import yaml  # Import here to avoid circular imports
-                yaml_content = yaml.dump(result, default_flow_style=False)
+                # Use the imported yaml module (already imported at the top of the file)
+                yaml_content = yaml.dump(result, default_flow_style=False, sort_keys=False)
             else:
                 # Use the content directly if it's already in YAML format
                 yaml_content = converted_content
         
             return Response(
                 content=yaml_content,
-                media_type="application/yaml"
+                media_type="application/yaml"  # Use consistent YAML media type
             )
         else:
             # Return raw file content

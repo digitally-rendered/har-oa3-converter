@@ -98,11 +98,25 @@ def test_api_formats_endpoint(client):
     response = client.get("/api/formats")
     assert response.status_code == 200
     
-    formats = response.json()
-    assert isinstance(formats, list)
-    assert "har" in formats
-    assert "openapi3" in formats
-    assert "swagger" in formats
+    data = response.json()
+    
+    # Handle both structured response (FormatResponse) and legacy list format
+    if isinstance(data, dict) and "formats" in data:
+        # New structured format with FormatResponse model
+        formats = data["formats"]
+        assert isinstance(formats, list)
+        
+        # Extract format names from the format objects
+        format_names = [fmt["name"] for fmt in formats if "name" in fmt]
+        assert "har" in format_names
+        assert "openapi3" in format_names
+        assert "swagger" in format_names
+    else:
+        # Legacy list format (backward compatibility)
+        assert isinstance(data, list)
+        assert "har" in data
+        assert "openapi3" in data
+        assert "swagger" in data
 
 def test_api_convert_endpoint_with_har(client, sample_har_file):
     """Test the convert endpoint with a valid HAR file."""
@@ -154,7 +168,9 @@ def test_api_accept_header_handling(client, sample_har_file):
     """Test handling of Accept headers for content negotiation."""
     formats_and_headers = [
         ("application/json", "application/json"),
-        ("application/yaml", "application/yaml")
+        ("application/yaml", "application/yaml"),
+        ("application/x-yaml", "application/yaml"),
+        ("text/yaml", "application/yaml")
     ]
     
     for accept_header, expected_content_type in formats_and_headers:

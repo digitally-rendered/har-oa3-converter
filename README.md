@@ -151,6 +151,101 @@ api-server --host 0.0.0.0 --port 8080
 # Enable auto-reload for development
 api-server --reload
 
+## Docker
+
+The HAR to OpenAPI 3 Converter can be run in a Docker container for consistent environments across platforms.
+
+### Building the Docker Image
+
+```bash
+# Build the Docker image
+./scripts/build_docker.sh
+
+# Or build manually
+docker build -t har-oa3-converter:latest .
+```
+
+### Running the Converter in Docker
+
+```bash
+# Basic usage - convert HAR to YAML
+docker run --rm -v $(pwd):/data har-oa3-converter:latest format -i /data/input.har -o /data/output.yaml
+
+# With options
+docker run --rm -v $(pwd):/data har-oa3-converter:latest format \
+  -i /data/input.har \
+  -o /data/output.yaml \
+  --title "Docker API" \
+  --version "1.0.0"# Step 1: Set up Rancher Desktop
+  ./scripts/setup_rancher_desktop.sh
+  
+  # Step 2: Verify Docker is ready for testing
+  ./scripts/verify_docker_for_testing.sh
+  
+  # Step 3: Run your Docker tests
+  ./scripts/run_tests_in_docker.sh
+
+# Using the API server in Docker
+docker run --rm -p 8080:8080 har-oa3-converter:latest api-server --host 0.0.0.0 --port 8080
+```
+
+### Testing with Docker
+
+We provide comprehensive testing capabilities within Docker to ensure consistent test environments:
+
+```bash
+# Run all tests in Docker with coverage, HTML and JSON reports, and parallel execution
+./scripts/run_tests_in_docker.sh
+
+# Run specific tests in Docker
+./scripts/run_tests_in_docker.sh tests/converters/
+
+# Run Docker-specific tests only
+pytest tests/docker/test_docker_functionality.py -v
+
+# Run API endpoint tests against the containerized API server
+./scripts/run_api_tests_in_docker.sh
+```
+
+The Docker tests validate:
+
+1. Application functionality within containers
+2. Command-line interface operation
+3. HAR to OpenAPI conversion accuracy
+4. Test coverage requirements (targeting 100%)
+5. Proper reporting via pytest-html and pytest-json-report
+6. Parallel test execution with pytest-xdist
+7. Complete API endpoint validation (for the RESTful API server)
+
+Test reports from Docker execution are available in the `docker-reports` directory after running the tests.
+
+### API Testing with Docker
+
+The API tests (`tests/docker/test_docker_api.py`) specifically validate the containerized API server by:
+
+1. Launching the API server in a Docker container
+2. Testing all API endpoints through HTTP requests
+3. Validating proper response formats based on Accept headers
+4. Ensuring schema validation using the centralized JSON schemas
+5. Testing error handling for invalid inputs
+6. Verifying that conversions work correctly through the API
+
+API tests follow the same quality standards as all other tests:
+
+- 100% test coverage requirement
+- Comprehensive JSON schema validation for all requests/responses
+- Proper HTTP status code checking
+- Content negotiation testing (JSON/YAML output formats)
+- Detailed HTML and JSON reporting
+
+Run the API tests with full reporting:
+
+```bash
+./scripts/run_api_tests_in_docker.sh
+```
+
+API test reports are available in the `docker-reports/api-tests` directory.
+
 # Specify log level
 api-server --log-level debug
 ```

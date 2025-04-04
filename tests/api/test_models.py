@@ -69,7 +69,7 @@ class TestConversionOptions:
             version="1.0.0"
         )
         
-        options_dict = options.dict()
+        options_dict = options.model_dump()
         assert options_dict["title"] == "Test API"
         assert options_dict["version"] == "1.0.0"
         assert options_dict["skip_validation"] is False
