@@ -346,7 +346,7 @@ def test_convert_endpoint_accept_header(
 
 # Test schema validation
 # Skipped in favor of dedicated API tests
-@pytest.mark.skip(reason="Schema validation test skipped in favor of dedicated endpoint tests")
+@pytest.mark.skip(reason="Schema validation test skipped due to byte sequence issues")
 @schema.parametrize()
 def test_schema_validation_all_endpoints(case):
     """Test that all API endpoints comply with the OpenAPI schema."""

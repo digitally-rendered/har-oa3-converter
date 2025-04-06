@@ -11,6 +11,7 @@ from har_oa3_converter.converters.schema_validator import (
     validate_format,
     detect_format,
     validate_file,
+    validate_schema_object,
     SUPPORTED_FORMATS,
 )
 
