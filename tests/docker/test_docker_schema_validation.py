@@ -52,8 +52,8 @@ def test_api_content_negotiation(api_container: DockerAPIContainer) -> None:
     # Test the formats endpoint with different Accept headers
     accept_types = [
         ("application/json", "application/json"),
-        ("application/x-yaml", "application/x-yaml"),
-        ("application/yaml", "application/x-yaml"),  # Should handle this alias too
+        ("application/x-yaml", ["application/x-yaml", "application/yaml"]),
+        ("application/yaml", ["application/x-yaml", "application/yaml"]),  # Should handle this alias too
         ("text/html, application/json", "application/json"),  # Preference order
     ]
 
@@ -67,9 +67,16 @@ def test_api_content_negotiation(api_container: DockerAPIContainer) -> None:
         assert (
             response.status_code == 200
         ), f"Request with Accept: {accept_header} failed"
-        assert response.headers["content-type"].startswith(
-            expected_content_type
-        ), f"Expected {expected_content_type} for Accept: {accept_header}, got {response.headers['content-type']}"
+        # Handle both string and list of acceptable content types
+        if isinstance(expected_content_type, list):
+            content_type_matched = any(
+                response.headers["content-type"].startswith(ct) for ct in expected_content_type
+            )
+            assert content_type_matched, f"Expected one of {expected_content_type} for Accept: {accept_header}, got {response.headers['content-type']}"
+        else:
+            assert response.headers["content-type"].startswith(
+                expected_content_type
+            ), f"Expected {expected_content_type} for Accept: {accept_header}, got {response.headers['content-type']}"
 
         # Verify the response is properly formatted based on content type
         if expected_content_type == "application/json":

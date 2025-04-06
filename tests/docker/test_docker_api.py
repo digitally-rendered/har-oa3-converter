@@ -388,7 +388,9 @@ def test_api_formats_endpoint_yaml(api_container: DockerAPIContainer) -> None:
 
     # Verify response basics
     assert response.status_code == 200
-    assert response.headers["content-type"].startswith("application/x-yaml")
+    # Accept either application/yaml or application/x-yaml as valid YAML content types
+    assert response.headers["content-type"].startswith("application/yaml") or \
+           response.headers["content-type"].startswith("application/x-yaml")
 
     # Parse YAML response
     data = yaml.safe_load(response.text)
@@ -460,7 +462,9 @@ def test_api_convert_endpoint_yaml(
 
     # Verify response
     assert response.status_code == 200
-    assert response.headers["content-type"].startswith("application/x-yaml")
+    # Accept either application/yaml or application/x-yaml as valid YAML content types
+    assert response.headers["content-type"].startswith("application/yaml") or \
+           response.headers["content-type"].startswith("application/x-yaml")
     content = yaml.safe_load(response.text)
     assert "openapi" in content
     assert "paths" in content

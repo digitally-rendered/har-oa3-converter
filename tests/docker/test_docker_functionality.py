@@ -20,10 +20,16 @@ from tests.docker.docker_utils import (
 def run_docker_command(command, volumes=None):
     """Run a command in the Docker container."""
     cmd = ["docker", "run", "--rm"]
+    
+    # Run as root in CI environments to avoid permission issues
+    if os.environ.get('CI') == 'true' or os.environ.get('GITHUB_ACTIONS') == 'true':
+        cmd.append("--user=root")
 
     # Add volume mappings
     if volumes:
         for host_path, container_path in volumes.items():
+            # Make sure the host directory has appropriate permissions
+            os.chmod(host_path, 0o777)  # rwx for all users
             cmd.extend(["-v", f"{host_path}:{container_path}"])
 
     cmd.append("har-oa3-converter:latest")
@@ -158,15 +164,27 @@ def sample_har_file():
         }
     }
 
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".har") as f:
-        f.write(json.dumps(sample_har).encode("utf-8"))
-        file_path = f.name
+    # Create a temp directory with appropriate permissions
+    temp_dir = tempfile.mkdtemp()
+    if os.environ.get('CI') == 'true' or os.environ.get('GITHUB_ACTIONS') == 'true':
+        # Ensure directory has appropriate permissions in CI
+        os.chmod(temp_dir, 0o777)
+    
+    # Create the HAR file in the temp directory
+    file_path = os.path.join(temp_dir, "sample.har")
+    with open(file_path, "w") as f:
+        json.dump(sample_har, f)
+    
+    # Ensure the file has appropriate permissions
+    os.chmod(file_path, 0o666)  # rw for all users
 
     yield file_path
 
     # Cleanup
     if os.path.exists(file_path):
         os.unlink(file_path)
+    if os.path.exists(temp_dir):
+        shutil.rmtree(temp_dir)
 
 
 @docker_running
