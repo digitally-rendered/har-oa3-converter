@@ -60,28 +60,41 @@ jobs:
       continue-on-error: true
 
     - name: Test Summary
+      if: always()
       run: |
         echo "## Python ${{ matrix.python-version }} Test Results" >> $GITHUB_STEP_SUMMARY
         
-        # Set default value for test result if it's empty
-        TEST_RESULT="${{ steps.tests.outputs.test_result || 'failure' }}"
+        # Explicitly get the test result from the tests step
+        TEST_RESULT="${{ steps.tests.outputs.test_result }}"
+        
+        # Check if the result is empty and set a default
+        if [ -z "$TEST_RESULT" ]; then
+          TEST_RESULT="failure"
+        fi
+        
+        echo "Debug: Test result is '$TEST_RESULT'" >> $GITHUB_STEP_SUMMARY
         
         if [ "$TEST_RESULT" == "success" ]; then
           echo "✅ All tests passed" >> $GITHUB_STEP_SUMMARY
         else
           echo "❌ Some tests failed" >> $GITHUB_STEP_SUMMARY
-          exit 1
+          # Don't exit with error yet, let's continue to show coverage
         fi
         
         # Add coverage summary
         if [ -f coverage.xml ]; then
-          echo "\n### Coverage Report" >> $GITHUB_STEP_SUMMARY
-          COVERAGE=$(cat coverage.xml | grep -o 'line-rate="[0-9.]+"' | head -1 | cut -d"" -f2 || echo "0")
+          echo "### Coverage Report" >> $GITHUB_STEP_SUMMARY
+          COVERAGE=$(grep -o 'line-rate="[0-9.]+"' coverage.xml | head -1 | grep -o '[0-9.]+' || echo "0")
           COVERAGE_PCT=$(echo "$COVERAGE * 100" | bc -l | xargs printf "%.2f" || echo "0.00")
           echo "- Line Coverage: $COVERAGE_PCT%" >> $GITHUB_STEP_SUMMARY
         else
-          echo "\n### Coverage Report" >> $GITHUB_STEP_SUMMARY
+          echo "### Coverage Report" >> $GITHUB_STEP_SUMMARY
           echo "- Coverage report not generated" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        # Now exit with error if tests failed
+        if [ "$TEST_RESULT" != "success" ]; then
+          exit 1
         fi
     
     - name: Upload coverage to Codecov
