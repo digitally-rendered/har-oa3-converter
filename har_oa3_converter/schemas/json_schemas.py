@@ -19,8 +19,8 @@ HAR_SCHEMA = {
                     "type": "object",
                     "properties": {
                         "name": {"type": "string"},
-                        "version": {"type": "string"}
-                    }
+                        "version": {"type": "string"},
+                    },
                 },
                 "entries": {
                     "type": "array",
@@ -40,9 +40,9 @@ HAR_SCHEMA = {
                                             "required": ["name", "value"],
                                             "properties": {
                                                 "name": {"type": "string"},
-                                                "value": {"type": "string"}
-                                            }
-                                        }
+                                                "value": {"type": "string"},
+                                            },
+                                        },
                                     },
                                     "queryString": {
                                         "type": "array",
@@ -51,18 +51,18 @@ HAR_SCHEMA = {
                                             "required": ["name", "value"],
                                             "properties": {
                                                 "name": {"type": "string"},
-                                                "value": {"type": "string"}
-                                            }
-                                        }
+                                                "value": {"type": "string"},
+                                            },
+                                        },
                                     },
                                     "postData": {
                                         "type": "object",
                                         "properties": {
                                             "mimeType": {"type": "string"},
-                                            "text": {"type": "string"}
-                                        }
-                                    }
-                                }
+                                            "text": {"type": "string"},
+                                        },
+                                    },
+                                },
                             },
                             "response": {
                                 "type": "object",
@@ -77,25 +77,25 @@ HAR_SCHEMA = {
                                             "required": ["name", "value"],
                                             "properties": {
                                                 "name": {"type": "string"},
-                                                "value": {"type": "string"}
-                                            }
-                                        }
+                                                "value": {"type": "string"},
+                                            },
+                                        },
                                     },
                                     "content": {
                                         "type": "object",
                                         "properties": {
                                             "mimeType": {"type": "string"},
-                                            "text": {"type": "string"}
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+                                            "text": {"type": "string"},
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
         }
-    }
+    },
 }
 
 # OpenAPI 3.0 Schema (simplified version)
@@ -110,8 +110,8 @@ OPENAPI3_SCHEMA = {
             "properties": {
                 "title": {"type": "string"},
                 "version": {"type": "string"},
-                "description": {"type": "string"}
-            }
+                "description": {"type": "string"},
+            },
         },
         "paths": {
             "type": "object",
@@ -123,15 +123,12 @@ OPENAPI3_SCHEMA = {
                         "summary": {"type": "string"},
                         "description": {"type": "string"},
                         "operationId": {"type": "string"},
-                        "parameters": {
-                            "type": "array",
-                            "items": {"type": "object"}
-                        },
+                        "parameters": {"type": "array", "items": {"type": "object"}},
                         "requestBody": {"type": "object"},
-                        "responses": {"type": "object"}
-                    }
-                }
-            }
+                        "responses": {"type": "object"},
+                    },
+                },
+            },
         },
         "components": {"type": "object"},
         "servers": {
@@ -141,11 +138,11 @@ OPENAPI3_SCHEMA = {
                 "required": ["url"],
                 "properties": {
                     "url": {"type": "string"},
-                    "description": {"type": "string"}
-                }
-            }
-        }
-    }
+                    "description": {"type": "string"},
+                },
+            },
+        },
+    },
 }
 
 # Swagger 2.0 Schema (simplified version)
@@ -160,8 +157,8 @@ SWAGGER_SCHEMA = {
             "properties": {
                 "title": {"type": "string"},
                 "version": {"type": "string"},
-                "description": {"type": "string"}
-            }
+                "description": {"type": "string"},
+            },
         },
         "basePath": {"type": "string"},
         "paths": {
@@ -174,22 +171,16 @@ SWAGGER_SCHEMA = {
                         "summary": {"type": "string"},
                         "description": {"type": "string"},
                         "operationId": {"type": "string"},
-                        "parameters": {
-                            "type": "array",
-                            "items": {"type": "object"}
-                        },
-                        "responses": {"type": "object"}
-                    }
-                }
-            }
+                        "parameters": {"type": "array", "items": {"type": "object"}},
+                        "responses": {"type": "object"},
+                    },
+                },
+            },
         },
         "definitions": {"type": "object"},
         "host": {"type": "string"},
-        "schemes": {
-            "type": "array",
-            "items": {"type": "string"}
-        }
-    }
+        "schemes": {"type": "array", "items": {"type": "string"}},
+    },
 }
 
 # Postman Collection Schema (simplified version)
@@ -204,8 +195,8 @@ POSTMAN_SCHEMA = {
                 "_postman_id": {"type": "string"},
                 "name": {"type": "string"},
                 "description": {"type": "string"},
-                "schema": {"type": "string"}
-            }
+                "schema": {"type": "string"},
+            },
         },
         "item": {
             "type": "array",
@@ -220,41 +211,43 @@ POSTMAN_SCHEMA = {
                                 "type": "object",
                                 "properties": {
                                     "method": {"type": "string"},
-                                    "url": {"oneOf": [{"type": "string"}, {"type": "object"}]},
+                                    "url": {
+                                        "oneOf": [
+                                            {"type": "string"},
+                                            {"type": "object"},
+                                        ]
+                                    },
                                     "header": {
                                         "type": "array",
-                                        "items": {"type": "object"}
+                                        "items": {"type": "object"},
                                     },
-                                    "body": {"type": "object"}
-                                }
+                                    "body": {"type": "object"},
+                                },
                             },
-                            "response": {
-                                "type": "array",
-                                "items": {"type": "object"}
-                            }
-                        }
+                            "response": {"type": "array", "items": {"type": "object"}},
+                        },
                     },
                     {
                         "type": "object",
                         "required": ["name", "item"],
                         "properties": {
                             "name": {"type": "string"},
-                            "item": {"type": "array"}
-                        }
-                    }
+                            "item": {"type": "array"},
+                        },
+                    },
                 ]
-            }
-        }
-    }
+            },
+        },
+    },
 }
 
 
 def get_schema(schema_name: str) -> Optional[Dict[str, Any]]:
     """Get schema by name.
-    
+
     Args:
         schema_name: Name of schema to get
-        
+
     Returns:
         Schema definition or None if not found
     """

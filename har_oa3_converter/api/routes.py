@@ -166,6 +166,14 @@ async def list_formats(
             "model": ErrorResponse,
             "description": "Invalid request"
         },
+        408: {
+            "model": ErrorResponse,
+            "description": "Request timeout"
+        },
+        413: {
+            "model": ErrorResponse,
+            "description": "Payload too large"
+        },
         415: {
             "model": ErrorResponse,
             "description": "Unsupported media type"
@@ -229,16 +237,23 @@ async def convert_document(
             source_format = "openapi3"
     
     # Save uploaded file to temporary location
-    file_content = await file.read()
-    
-    # Make sure suffix is appropriate for the source format
-    suffix = f".{source_format}" if source_format else ".tmp"
-    if source_format == "har" and not suffix.endswith(".har"):
-        suffix = ".har"
+    try:
+        file_content = await file.read()
         
-    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp_in:
-        tmp_in.write(file_content)
-        input_path = tmp_in.name
+        # Make sure suffix is appropriate for the source format
+        suffix = f".{source_format}" if source_format else ".tmp"
+        if source_format == "har" and not suffix.endswith(".har"):
+            suffix = ".har"
+            
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp_in:
+            tmp_in.write(file_content)
+            input_path = tmp_in.name
+    except MemoryError as e:
+        # Handle memory errors with a 413 Payload Too Large status
+        raise HTTPException(status_code=413, detail=f"Memory error - file too large: {str(e)}")
+    except TimeoutError as e:
+        # Handle timeout errors with a 408 Request Timeout status
+        raise HTTPException(status_code=408, detail=f"Operation timed out: {str(e)}")
         
     # Reset file contents for potential reuse
     await file.seek(0)
@@ -256,14 +271,21 @@ async def convert_document(
         # Determine if validation should be performed
         validate_schema = not conversion_options.pop('skip_validation', False)
         
-        result = convert_file(
-            input_path,
-            output_path,
-            source_format=source_format,
-            target_format=target_format_str,
-            validate_schema=validate_schema,
-            **conversion_options
-        )
+        try:
+            result = convert_file(
+                input_path,
+                output_path,
+                source_format=source_format,
+                target_format=target_format_str,
+                validate_schema=validate_schema,
+                **conversion_options
+            )
+        except TimeoutError as e:
+            # Re-raise TimeoutError to be caught by the global exception handler
+            raise TimeoutError(f"Schema validation timeout: {str(e)}")
+        except MemoryError as e:
+            # Re-raise MemoryError to be caught by the global exception handler
+            raise MemoryError(f"Memory error - file too large: {str(e)}")
         
         # Determine response content type with proper priority hierarchy
         # 1. Set default based on file extension
@@ -329,6 +351,12 @@ async def convert_document(
                 media_type="application/octet-stream"
             )
     
+    except TimeoutError as e:
+        # Re-raise TimeoutError to be caught by the global exception handler
+        raise TimeoutError(f"Operation timed out: {str(e)}")
+    except MemoryError as e:
+        # Re-raise MemoryError to be caught by the global exception handler
+        raise MemoryError(f"Memory error - file too large: {str(e)}")
     except Exception as e:
         raise HTTPException(
             status_code=400,

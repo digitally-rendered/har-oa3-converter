@@ -12,7 +12,7 @@ SCHEMA = {
     "info": {
         "title": "HAR to OpenAPI 3 Converter API",
         "version": "0.1.0",
-        "description": "API for converting between different API specification formats"
+        "description": "API for converting between different API specification formats",
     },
     "paths": {
         "/api/formats": {
@@ -33,29 +33,23 @@ SCHEMA = {
                                             "items": {
                                                 "type": "object",
                                                 "properties": {
-                                                    "name": {
-                                                        "type": "string"
-                                                    },
-                                                    "description": {
-                                                        "type": "string"
-                                                    },
+                                                    "name": {"type": "string"},
+                                                    "description": {"type": "string"},
                                                     "content_types": {
                                                         "type": "array",
-                                                        "items": {
-                                                            "type": "string"
-                                                        }
-                                                    }
+                                                        "items": {"type": "string"},
+                                                    },
                                                 },
-                                                "required": ["name"]
-                                            }
+                                                "required": ["name"],
+                                            },
                                         }
                                     },
-                                    "required": ["formats"]
+                                    "required": ["formats"],
                                 }
                             }
-                        }
+                        },
                     }
-                }
+                },
             }
         },
         "/api/convert/{target_format}": {
@@ -70,20 +64,17 @@ SCHEMA = {
                         "required": True,
                         "schema": {
                             "type": "string",
-                            "enum": ["openapi3", "har", "swagger"]
+                            "enum": ["openapi3", "har", "swagger"],
                         },
-                        "description": "Target format to convert to"
+                        "description": "Target format to convert to",
                     },
                     {
                         "name": "source_format",
                         "in": "query",
                         "required": False,
-                        "schema": {
-                            "type": "string",
-                            "nullable": True
-                        },
-                        "description": "Source format override (auto-detected if not provided)"
-                    }
+                        "schema": {"type": "string", "nullable": True},
+                        "description": "Source format override (auto-detected if not provided)",
+                    },
                 ],
                 "requestBody": {
                     "required": True,
@@ -95,61 +86,51 @@ SCHEMA = {
                                     "file": {
                                         "type": "string",
                                         "format": "binary",
-                                        "description": "File to convert"
+                                        "description": "File to convert",
                                     },
                                     "title": {
                                         "type": "string",
                                         "nullable": True,
-                                        "description": "Title for the converted document"
+                                        "description": "Title for the converted document",
                                     },
                                     "version": {
                                         "type": "string",
                                         "nullable": True,
-                                        "description": "Version for the converted document"
+                                        "description": "Version for the converted document",
                                     },
                                     "description": {
                                         "type": "string",
                                         "nullable": True,
-                                        "description": "Description for the converted document"
+                                        "description": "Description for the converted document",
                                     },
                                     "servers": {
                                         "type": "array",
-                                        "items": {
-                                            "type": "string"
-                                        },
-                                        "description": "Server URLs for the converted document"
+                                        "items": {"type": "string"},
+                                        "description": "Server URLs for the converted document",
                                     },
                                     "base_path": {
                                         "type": "string",
                                         "nullable": True,
-                                        "description": "Base path for the converted document"
+                                        "description": "Base path for the converted document",
                                     },
                                     "skip_validation": {
                                         "type": "boolean",
                                         "default": False,
-                                        "description": "Skip validation of the converted document"
-                                    }
+                                        "description": "Skip validation of the converted document",
+                                    },
                                 },
-                                "required": ["file"]
+                                "required": ["file"],
                             }
                         }
-                    }
+                    },
                 },
                 "responses": {
                     "200": {
                         "description": "Successful conversion",
                         "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object"
-                                }
-                            },
-                            "application/yaml": {
-                                "schema": {
-                                    "type": "object"
-                                }
-                            }
-                        }
+                            "application/json": {"schema": {"type": "object"}},
+                            "application/yaml": {"schema": {"type": "object"}},
+                        },
                     },
                     "400": {
                         "description": "Invalid input",
@@ -157,14 +138,10 @@ SCHEMA = {
                             "application/json": {
                                 "schema": {
                                     "type": "object",
-                                    "properties": {
-                                        "detail": {
-                                            "type": "string"
-                                        }
-                                    }
+                                    "properties": {"detail": {"type": "string"}},
                                 }
                             }
-                        }
+                        },
                     },
                     "422": {
                         "description": "Validation error",
@@ -183,25 +160,23 @@ SCHEMA = {
                                                         "items": {
                                                             "oneOf": [
                                                                 {"type": "string"},
-                                                                {"type": "integer"}
+                                                                {"type": "integer"},
                                                             ]
-                                                        }
+                                                        },
                                                     },
                                                     "msg": {"type": "string"},
-                                                    "type": {"type": "string"}
-                                                }
-                                            }
+                                                    "type": {"type": "string"},
+                                                },
+                                            },
                                         }
-                                    }
+                                    },
                                 }
                             }
-                        }
-                    }
-                }
+                        },
+                    },
+                },
             }
-        }
+        },
     },
-    "components": {
-        "schemas": {}
-    }
+    "components": {"schemas": {}},
 }

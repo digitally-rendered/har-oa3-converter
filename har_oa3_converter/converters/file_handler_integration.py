@@ -1,15 +1,13 @@
 """Integration module for FileHandler with schemas and converters."""
 
-import json
-from pathlib import Path
 from typing import Dict, Any
 
 # Import schemas
 from har_oa3_converter.converters.schema_validator import (
-    HAR_SCHEMA, 
-    OPENAPI3_SCHEMA, 
-    SWAGGER_SCHEMA, 
-    POSTMAN_SCHEMA
+    HAR_SCHEMA,
+    OPENAPI3_SCHEMA,
+    SWAGGER_SCHEMA,
+    POSTMAN_SCHEMA,
 )
 
 # Import FileHandler
@@ -27,13 +25,13 @@ def register_schemas() -> None:
 
 def load_file(file_path: str) -> Dict[str, Any]:
     """Load file content using FileHandler with error handling.
-    
+
     Args:
         file_path: Path to file
-        
+
     Returns:
         Loaded file content
-        
+
     Raises:
         ValueError: If file could not be loaded
         FileNotFoundError: If file does not exist
@@ -43,11 +41,11 @@ def load_file(file_path: str) -> Dict[str, Any]:
 
 def save_file(data: Dict[str, Any], file_path: str) -> None:
     """Save file content using FileHandler with error handling.
-    
+
     Args:
         data: Data to save
         file_path: Path to save to
-        
+
     Raises:
         ValueError: If file could not be saved
     """
@@ -56,11 +54,11 @@ def save_file(data: Dict[str, Any], file_path: str) -> None:
 
 def validate_with_schema(data: Dict[str, Any], schema_name: str) -> bool:
     """Validate data against a registered schema.
-    
+
     Args:
         data: Data to validate
         schema_name: Name of schema to validate against
-        
+
     Returns:
         True if valid, False otherwise
     """

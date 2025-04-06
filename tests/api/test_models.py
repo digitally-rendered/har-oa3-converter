@@ -7,7 +7,7 @@ from har_oa3_converter.api.models import (
     ConversionFormat,
     ConversionOptions,
     ConversionResponse,
-    ErrorResponse
+    ErrorResponse,
 )
 
 
@@ -52,9 +52,9 @@ class TestConversionOptions:
             description="Test API Description",
             servers=["https://api.example.com"],
             base_path="/api",
-            skip_validation=True
+            skip_validation=True,
         )
-        
+
         assert options.title == "Test API"
         assert options.version == "1.0.0"
         assert options.description == "Test API Description"
@@ -64,11 +64,8 @@ class TestConversionOptions:
 
     def test_conversion_options_dict(self):
         """Test converting ConversionOptions to dictionary."""
-        options = ConversionOptions(
-            title="Test API",
-            version="1.0.0"
-        )
-        
+        options = ConversionOptions(title="Test API", version="1.0.0")
+
         options_dict = options.model_dump()
         assert options_dict["title"] == "Test API"
         assert options_dict["version"] == "1.0.0"
@@ -82,9 +79,7 @@ class TestConversionResponse:
         """Test that required fields must be provided."""
         # All required fields provided
         response = ConversionResponse(
-            format=ConversionFormat.HAR,
-            content_type="application/json",
-            success=True
+            format=ConversionFormat.HAR, content_type="application/json", success=True
         )
         assert response.format == ConversionFormat.HAR
         assert response.content_type == "application/json"
@@ -94,7 +89,7 @@ class TestConversionResponse:
         # Missing required fields
         with pytest.raises(ValidationError):
             ConversionResponse(format=ConversionFormat.HAR, success=True)
-        
+
         with pytest.raises(ValidationError):
             ConversionResponse(content_type="application/json", success=True)
 
@@ -104,9 +99,9 @@ class TestConversionResponse:
             format=ConversionFormat.HAR,
             content_type="application/json",
             success=False,
-            error="Conversion failed"
+            error="Conversion failed",
         )
-        
+
         assert response.success is False
         assert response.error == "Conversion failed"
 

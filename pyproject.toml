@@ -51,10 +51,17 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
-# Code coverage configuration
-addopts = "--cov=har_oa3_converter --cov-report=xml:reports/coverage.xml --cov-report=html:reports/coverage --cov-report=term-missing"
+# Suppress specific deprecation warnings from Schemathesis
+filterwarnings = [
+    "ignore:jsonschema.exceptions.RefResolutionError is deprecated:DeprecationWarning",
+    "ignore:jsonschema.RefResolver is deprecated:DeprecationWarning"
+]
+
+# Code coverage configuration with additional reports
+addopts = "--cov=har_oa3_converter --cov-report=html:reports/coverage --cov-report=xml:reports/coverage.xml --html=reports/pytest-report.html --json-report --json-report-file=reports/pytest-report.json --cov-report=term-missing"
 
 # General test settings
+console_output_style = "progress"
 testpaths = ["tests"]
 norecursedirs = [".git", "__pycache__", "*.egg-info", ".pytest_cache", "dist", "build"]
 python_files = "test_*.py"
