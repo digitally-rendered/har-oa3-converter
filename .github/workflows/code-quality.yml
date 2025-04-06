@@ -33,17 +33,17 @@ jobs:
     
     - name: Check formatting with black
       run: |
-        poetry run black --check .
+        poetry run black --check --config pyproject.toml .
     
     - name: Lint with pylint
       run: |
-        poetry run pylint har_oa3_converter tests
+        poetry run pylint --rcfile=.pylintrc har_oa3_converter tests
       continue-on-error: true  # Don't fail the build on lint errors initially
     
     - name: Generate pylint report
       if: always()
       run: |
-        poetry run pylint har_oa3_converter tests --output-format=text:pylint-report.txt,json:pylint-report.json
+        poetry run pylint --rcfile=.pylintrc har_oa3_converter tests --output-format=text:pylint-report.txt,json:pylint-report.json
       continue-on-error: true
     
     - name: Upload lint reports as artifacts

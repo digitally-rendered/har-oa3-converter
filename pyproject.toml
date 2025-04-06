@@ -46,6 +46,27 @@ har2oa3 = "har_oa3_converter.cli.har_to_oas_cli:main"
 api-convert = "har_oa3_converter.cli.format_cli:main"
 api-server = "har_oa3_converter.api.server:main"
 
+[tool.black]
+line-length = 88
+target-version = ['py38', 'py39', 'py310', 'py311', 'py312', 'py313']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/'
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
