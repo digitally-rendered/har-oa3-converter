@@ -3,6 +3,9 @@
 API endpoints will use these schema documents to interpret parameter objects.
 """
 
+import json
+import os
+from pathlib import Path
 from typing import Dict, Any, Optional
 
 # HAR Schema (HTTP Archive format)
@@ -242,6 +245,33 @@ POSTMAN_SCHEMA = {
 }
 
 
+# Hoppscotch Schema (loaded from file)
+def load_hoppscotch_schema() -> Dict[str, Any]:
+    """Load the Hoppscotch schema from the JSON file.
+
+    Returns:
+        Hoppscotch schema definition
+    """
+    schema_path = Path(__file__).parent / "hoppscotch_schema.json"
+    with open(schema_path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+# Load the Hoppscotch schema
+try:
+    HOPPSCOTCH_SCHEMA = load_hoppscotch_schema()
+except Exception as e:
+    print(f"Warning: Failed to load Hoppscotch schema: {e}")
+    HOPPSCOTCH_SCHEMA = {
+        "type": "object",
+        "required": ["v", "name", "folders", "requests"],
+        "properties": {
+            "v": {"type": ["integer", "string"]},
+            "name": {"type": "string"},
+            "folders": {"type": "array"},
+            "requests": {"type": "array"}
+        }
+    }
+
 def get_schema(schema_name: str) -> Optional[Dict[str, Any]]:
     """Get schema by name.
 
@@ -256,5 +286,6 @@ def get_schema(schema_name: str) -> Optional[Dict[str, Any]]:
         "openapi3": OPENAPI3_SCHEMA,
         "swagger": SWAGGER_SCHEMA,
         "postman": POSTMAN_SCHEMA,
+        "hoppscotch": HOPPSCOTCH_SCHEMA,
     }
     return schemas.get(schema_name)

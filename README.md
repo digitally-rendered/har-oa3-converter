@@ -11,7 +11,7 @@ Built with robust schema validation and adherence to OpenAPI standards, this con
 ## Features
 
 - Convert HAR files to OpenAPI 3.0 specifications with schema validation
-- Convert between different API formats (HAR, OpenAPI 3, Swagger 2)
+- Convert between different API formats (HAR, OpenAPI 3, Swagger 2, Hoppscotch)
 - Support for multiple HTTP methods (GET, POST, PUT, DELETE, PATCH, OPTIONS, etc.)
 - Automatic parameter detection from query strings, headers, and path parameters
 - Request and response body schema generation with comprehensive type mapping
@@ -22,6 +22,24 @@ Built with robust schema validation and adherence to OpenAPI standards, this con
 - Full JSON Schema validation for request/response models
 - Stateless processing for scalable deployments
 - Extensive test coverage (95%+) ensuring reliability
+
+## Supported Formats
+
+The converter supports the following formats:
+
+| Format | Description | File Extensions |
+|--------|-------------|-----------------|
+| HAR | HTTP Archive format from browser dev tools | .har |
+| OpenAPI 3 | Modern API specification format | .yaml, .yml, .json |
+| Swagger 2 | Legacy API specification format | .yaml, .yml, .json |
+| Hoppscotch | Hoppscotch Collection format | .json |
+
+Supported conversion paths:
+
+- HAR → OpenAPI 3.0
+- OpenAPI 3.0 → Swagger 2.0
+- Swagger 2.0 → OpenAPI 3.0
+- Hoppscotch → OpenAPI 3.0
 
 ## Installation
 
@@ -103,6 +121,9 @@ api-convert input.openapi.json output.swagger.json \
 
 # Convert HAR to OpenAPI and validate
 api-convert input.har output.yaml --validate
+
+# Convert Hoppscotch Collection to OpenAPI 3
+api-convert hoppscotch_collection.json api_spec.yaml --from-format hoppscotch --to-format openapi3
 ```
 
 Options:
@@ -130,11 +151,13 @@ Available formats:
 - har: HTTP Archive format (.har)
 - openapi3: OpenAPI 3.0 specification (.yaml, .yml, .json)
 - swagger: Swagger 2.0 specification (.yaml, .yml, .json)
+- hoppscotch: Hoppscotch Collection format (.json)
 
 Available conversions:
 - har → openapi3: Convert HAR to OpenAPI 3.0
 - openapi3 → swagger: Convert OpenAPI 3.0 to Swagger 2.0
 - swagger → openapi3: Convert Swagger 2.0 to OpenAPI 3.0
+- hoppscotch → openapi3: Convert Hoppscotch Collection to OpenAPI 3.0
 ```
 
 #### API Server
@@ -285,6 +308,13 @@ curl -X POST "http://localhost:8000/api/convert/swagger" \
   -F "base_path=/api/v2" \
   -F "skip_validation=true"
 
+# Convert Hoppscotch collection to OpenAPI 3
+curl -X POST "http://localhost:8000/api/convert/openapi3" \
+  -H "Accept: application/json" \
+  -F "file=@hoppscotch_collection.json" \
+  -F "title=Hoppscotch API" \
+  -F "version=1.0.0"
+
 # List available formats
 curl -X GET "http://localhost:8000/api/formats" \
   -H "Accept: application/json"
@@ -343,6 +373,18 @@ print(f"Available formats: {formats}")
 
 # Get specific converter for a format pair
 converter = get_converter_for_formats("har", "openapi3")
+
+# Get Hoppscotch to OpenAPI 3 converter
+hoppscotch_converter = get_converter_for_formats("hoppscotch", "openapi3")
+
+# Example using Hoppscotch converter
+from har_oa3_converter.converters.formats.hoppscotch_to_openapi3 import HoppscotchToOpenApi3Converter
+
+# Initialize converter
+hoppscotch_converter = HoppscotchToOpenApi3Converter()
+
+# Convert Hoppscotch collection file to OpenAPI 3
+result = hoppscotch_converter.convert("hoppscotch_collection.json", "openapi3_spec.yaml")
 
 # Convert HAR to OpenAPI 3 with options
 result = convert_file(
@@ -457,7 +499,7 @@ poetry install --with dev
 
 ### Testing
 
-The project aims for 100% test coverage with comprehensive tests for all functionality:
+The project targets 100% test coverage with comprehensive tests for all functionality. Every converter and feature is thoroughly tested to ensure reliability and correctness.
 
 ```bash
 # Run all tests
@@ -468,6 +510,9 @@ poetry run pytest -v
 
 # Run tests for a specific module
 poetry run pytest tests/test_converter.py
+
+# Run specific converter tests
+poetry run pytest tests/converters/test_hoppscotch_to_openapi3.py -v
 
 # Run tests with code coverage
 poetry run pytest --cov=har_oa3_converter
@@ -483,7 +528,22 @@ poetry run pytest --cov=har_oa3_converter --cov-report=html:reports/coverage \
 poetry run pytest -xvs -n auto
 ```
 
+#### Test Structure
+
+Tests are organized by component and feature:
+
+- **Converter Tests**: Each format converter has dedicated tests (HAR, Postman, Hoppscotch, etc.)
+- **Schema Tests**: Validate all JSON schemas used for validation
+- **API Tests**: Test the RESTful API endpoints
+- **CLI Tests**: Verify command-line functionality
+- **Integration Tests**: Test end-to-end workflows
+- **Docker Tests**: Validate containerized functionality
+
+All models used in the converters are represented in JSON Schema documents and thoroughly tested with various input combinations to ensure robust handling of different API specifications.
+
 ### Code Quality
+
+The project maintains high code quality standards through automated tools and best practices:
 
 ```bash
 # Format code with Black

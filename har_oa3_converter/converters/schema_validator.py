@@ -9,13 +9,14 @@ from har_oa3_converter.utils.file_handler import FileHandler
 from har_oa3_converter.schemas import get_schema
 
 # Define the formats we support for validation
-SUPPORTED_FORMATS = ["har", "openapi3", "swagger", "postman"]
+SUPPORTED_FORMATS = ["har", "openapi3", "swagger", "postman", "hoppscotch"]
 
 # Schema constants used by other modules
 HAR_SCHEMA = get_schema("har")
 OPENAPI3_SCHEMA = get_schema("openapi3")
 SWAGGER_SCHEMA = get_schema("swagger")
 POSTMAN_SCHEMA = get_schema("postman")
+HOPPSCOTCH_SCHEMA = get_schema("hoppscotch")
 
 
 def validate_format(

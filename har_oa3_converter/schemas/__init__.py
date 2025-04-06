@@ -5,6 +5,7 @@ from har_oa3_converter.schemas.json_schemas import (
     OPENAPI3_SCHEMA,
     SWAGGER_SCHEMA,
     POSTMAN_SCHEMA,
+    HOPPSCOTCH_SCHEMA,
     get_schema,
 )
 
@@ -13,5 +14,6 @@ __all__ = [
     "OPENAPI3_SCHEMA",
     "SWAGGER_SCHEMA",
     "POSTMAN_SCHEMA",
+    "HOPPSCOTCH_SCHEMA",
     "get_schema",
 ]

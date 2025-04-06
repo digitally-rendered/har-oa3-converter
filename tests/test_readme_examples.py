@@ -12,6 +12,7 @@ from fastapi.testclient import TestClient
 
 from har_oa3_converter.converter import HarToOas3Converter
 from har_oa3_converter.converters.format_converter import HarToOpenApi3Converter
+from har_oa3_converter.converters.formats.hoppscotch_to_openapi3 import HoppscotchToOpenApi3Converter
 from har_oa3_converter.format_converter import (
     convert_file,
     get_available_formats,
