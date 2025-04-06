@@ -37,7 +37,7 @@ jobs:
         # Ensure we set a default value
         echo "test_result=failure" >> $GITHUB_OUTPUT
         # Try to import the module
-        if poetry run python -c "import har_oa3_converter; print(f'Successfully imported har_oa3_converter with Python {__import__(\'sys\').version}')" ; then
+        if poetry run python -c "import har_oa3_converter, sys; print(f'Successfully imported har_oa3_converter with Python {sys.version}')" ; then
           echo "test_result=success" >> $GITHUB_OUTPUT
         fi
       continue-on-error: true
