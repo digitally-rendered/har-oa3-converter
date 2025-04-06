@@ -26,7 +26,8 @@ class HarToOas3Converter:
             "version": "1.0.0",
             "description": "API specification generated from HAR file",
         }
-        self.servers = servers or []
+        # Explicitly type servers as List[Dict[str, Any]] to satisfy mypy
+        self.servers: List[Dict[str, Any]] = servers or []
         self.paths: Dict[str, Dict[str, Any]] = {}
         self.components: Dict[str, Dict[str, Any]] = {
             "schemas": {},
@@ -95,7 +96,9 @@ class HarToOas3Converter:
         }
 
         if self.servers:
-            openapi["servers"] = self.servers
+            # Explicit type cast to avoid Collection[str] error
+            servers_list: List[Dict[str, Any]] = self.servers
+            openapi["servers"] = servers_list
 
         return openapi
 
@@ -138,7 +141,7 @@ class HarToOas3Converter:
         entries = har_data.get("log", {}).get("entries", [])
 
         # Track processed methods to handle duplicate URLs
-        processed_methods = {}
+        processed_methods: Dict[str, Dict[str, Any]] = {}
 
         for entry in entries:
             request = entry.get("request", {})
@@ -205,10 +208,13 @@ class HarToOas3Converter:
             # Add path if not already present
             if path not in self.paths:
                 self.paths[path] = {}
-                processed_methods[path] = set()
+                # Initialize with a set for tracking methods
+                if path not in processed_methods:
+                    processed_methods[path] = set()
 
             # Handle duplicate methods for same path more effectively
-            if method in processed_methods.get(path, set()):
+            path_methods: Set[str] = processed_methods.get(path, set())
+            if method in path_methods:
                 # For duplicate method+path combinations, we could:
                 # 1. Skip it (current approach)
                 # 2. Merge with existing operation (for a more sophisticated approach)
@@ -218,7 +224,11 @@ class HarToOas3Converter:
                 continue
 
             # Add this method to processed methods for this path
-            processed_methods.setdefault(path, set()).add(method)
+            if path not in processed_methods:
+                processed_methods[path] = set()
+            # Ensure we're working with a set
+            method_set: Set[str] = processed_methods[path]
+            method_set.add(method)
 
             # Process request and response for this path and method
             self._process_request_response(path, method, request, response)
@@ -496,7 +506,9 @@ class HarToOas3Converter:
         }
 
         if self.servers:
-            spec["servers"] = self.servers
+            # Explicit type cast to avoid Collection[str] error
+            servers_list: List[Dict[str, Any]] = self.servers
+            spec["servers"] = servers_list
 
         return spec
 

@@ -59,7 +59,9 @@ class PostmanToHarConverter(FormatConverter):
         }
 
         # Process Postman Collection items
-        self._process_postman_items(postman_data, har_data["log"]["entries"])
+        # Ensure entries is correctly typed as List[Dict[str, Any]] for mypy
+        entries: List[Dict[str, Any]] = har_data["log"]["entries"]
+        self._process_postman_items(postman_data, entries)
 
         # Write to target file if specified
         if target_path:
@@ -193,7 +195,10 @@ class PostmanToHarConverter(FormatConverter):
 
         # Add request body if present
         if "body" in request_data:
-            self._add_request_body(entry["request"], request_data["body"])
+            # Ensure body_data is correctly typed as Dict[str, Any] for mypy
+            body_data = request_data["body"]
+            if isinstance(body_data, dict):
+                self._add_request_body(entry["request"], body_data)
 
         # Add example response if available
         if (
@@ -201,7 +206,10 @@ class PostmanToHarConverter(FormatConverter):
             and isinstance(item["response"], list)
             and item["response"]
         ):
-            self._add_example_response(entry["response"], item["response"][0])
+            # Ensure example is correctly typed as Dict[str, Any] for mypy
+            example = item["response"][0]
+            if isinstance(example, dict):
+                self._add_example_response(entry["response"], example)
 
         return entry
 

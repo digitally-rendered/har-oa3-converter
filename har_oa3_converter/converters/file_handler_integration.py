@@ -16,11 +16,15 @@ from har_oa3_converter.utils.file_handler import FileHandler
 
 def register_schemas() -> None:
     """Register all the supported schemas with the FileHandler."""
-    # Register schemas
-    FileHandler.register_schema("har", HAR_SCHEMA)
-    FileHandler.register_schema("openapi3", OPENAPI3_SCHEMA)
-    FileHandler.register_schema("swagger", SWAGGER_SCHEMA)
-    FileHandler.register_schema("postman", POSTMAN_SCHEMA)
+    # Register schemas with null checks to satisfy mypy
+    if HAR_SCHEMA is not None:
+        FileHandler.register_schema("har", HAR_SCHEMA)
+    if OPENAPI3_SCHEMA is not None:
+        FileHandler.register_schema("openapi3", OPENAPI3_SCHEMA)
+    if SWAGGER_SCHEMA is not None:
+        FileHandler.register_schema("swagger", SWAGGER_SCHEMA)
+    if POSTMAN_SCHEMA is not None:
+        FileHandler.register_schema("postman", POSTMAN_SCHEMA)
 
 
 def load_file(file_path: str) -> Dict[str, Any]:

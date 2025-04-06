@@ -8,7 +8,7 @@ echo "=== Setting up Rancher Desktop on macOS ==="
 if ! command -v brew &> /dev/null; then
     echo "Homebrew not found. Installing Homebrew..."
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    
+
     # Add Homebrew to PATH if needed
     if [[ $(uname -m) == "arm64" ]]; then
         echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
@@ -51,7 +51,7 @@ echo "4. Wait for the initialization process to complete."
 echo ""
 
 # Wait for user to confirm setup is complete
-read -p "Press Enter after completing the Rancher Desktop setup in the UI..." 
+read -p "Press Enter after completing the Rancher Desktop setup in the UI..."
 
 # Check if docker command is available
 while ! command -v docker &> /dev/null; do

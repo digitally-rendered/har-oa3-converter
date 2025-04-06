@@ -457,7 +457,9 @@ class PostmanToHarConverter(FormatConverter):
         }
 
         # Process Postman items (requests)
-        self._process_postman_items(postman_data, har_data["log"]["entries"])
+        # Ensure entries is correctly typed as List[Dict[str, Any]] for mypy
+        entries: List[Dict[str, Any]] = har_data["log"]["entries"]
+        self._process_postman_items(postman_data, entries)
 
         # Save output if target path provided
         if target_path:

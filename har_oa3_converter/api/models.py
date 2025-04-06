@@ -5,12 +5,12 @@ from typing import Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field
 
+# Import at module level to avoid class-scoped import
+from har_oa3_converter.converters.format_registry import get_available_formats
+
 
 class ConversionFormat(str, Enum):
     """Supported conversion formats."""
-
-    # Import here to avoid circular imports
-    from har_oa3_converter.converters.format_registry import get_available_formats
 
     # Get all available formats
     _formats = get_available_formats()

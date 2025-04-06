@@ -153,11 +153,14 @@ def main(args: Optional[List[str]] = None) -> int:
         return 1
 
     # Parse format arguments
-    source_format = parsed_args.from_format
-    target_format = parsed_args.to_format
+    input_source_format: str = parsed_args.from_format or ""
+    input_target_format: str = parsed_args.to_format or ""
 
+    source_format = input_source_format
     if not source_format:
-        source_format = guess_format_from_file(input_path)
+        source_format_guess = guess_format_from_file(input_path)
+        if source_format_guess:
+            source_format = source_format_guess
         if source_format:
             print(f"Detected source format: {source_format}")
         else:
@@ -167,10 +170,13 @@ def main(args: Optional[List[str]] = None) -> int:
             )
             return 1
 
+    target_format = input_target_format
     if not target_format:
         # For target format, we first try to guess from the output file extension
         # If that fails, we'll try to determine from the available converters
-        target_format = guess_format_from_file(output_path)
+        target_format_guess = guess_format_from_file(output_path)
+        if target_format_guess:
+            target_format = target_format_guess
         if target_format:
             print(f"Detected target format: {target_format}")
         else:

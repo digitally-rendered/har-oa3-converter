@@ -89,5 +89,5 @@ echo "Installing Homebrew casks..."
 # Install casks
 brew install --cask \
   git-credential-manager
-  
+
 echo "Installation complete!"

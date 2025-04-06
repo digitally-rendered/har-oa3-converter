@@ -26,7 +26,8 @@ class HarToOas3Converter:
             "version": "1.0.0",
             "description": "API specification generated from HAR file",
         }
-        self.servers = servers or []
+        # Explicitly type servers as List[Dict[str, Any]] to satisfy mypy
+        self.servers: List[Dict[str, Any]] = servers or []
         self.paths: Dict[str, Dict[str, Any]] = {}
         self.components: Dict[str, Dict[str, Any]] = {
             "schemas": {},
@@ -350,8 +351,13 @@ class HarToOas3Converter:
             "components": self.components,
         }
 
+        # Handle servers with explicit typing to satisfy mypy
         if self.servers:
-            spec["servers"] = self.servers
+            # Create a new list with the same elements to ensure correct typing
+            servers_list: List[Dict[str, Any]] = []
+            for server in self.servers:
+                servers_list.append(server)
+            spec["servers"] = servers_list
 
         return spec
 

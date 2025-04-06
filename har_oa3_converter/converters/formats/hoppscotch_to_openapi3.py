@@ -224,7 +224,7 @@ class HoppscotchToOpenApi3Converter(FormatConverter):
         Returns:
             Dictionary of scopes
         """
-        scopes = {}
+        scopes: Dict[str, str] = {}
         if not scopes_str:
             return scopes
 
@@ -323,6 +323,10 @@ class HoppscotchToOpenApi3Converter(FormatConverter):
 
         # Add query parameters
         for param in request.get("params", []):
+            # Ensure param is a dict before accessing get method
+            if not isinstance(param, dict):
+                continue
+
             if not param.get("key"):
                 continue
 
@@ -343,6 +347,10 @@ class HoppscotchToOpenApi3Converter(FormatConverter):
 
         # Add headers
         for header in request.get("headers", []):
+            # Ensure header is a dict before accessing get method
+            if not isinstance(header, dict):
+                continue
+
             if not header.get("key"):
                 continue
 
@@ -366,13 +374,13 @@ class HoppscotchToOpenApi3Converter(FormatConverter):
         body_type = body.get("contentType", "")
 
         if body and method in ["post", "put", "patch"]:
-            request_body = {
+            request_body: Dict[str, Any] = {
                 "content": {},
             }
 
             if body_type == "application/json":
                 json_data = body.get("body", "")
-                if json_data:
+                if isinstance(json_data, str) and json_data:
                     try:
                         # Try to parse as JSON to create a schema
                         json_obj = json.loads(json_data)
@@ -518,7 +526,7 @@ class HoppscotchToOpenApi3Converter(FormatConverter):
             # Inherit from collection, already processed
             return
 
-        security = []
+        security: List[Dict[str, List[str]]] = []
 
         if auth_type == "basic":
             security_name = "basicAuth"

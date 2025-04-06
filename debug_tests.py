@@ -4,8 +4,9 @@
 import json
 import os
 import sys
-import yaml
 from pathlib import Path
+
+import yaml
 
 from har_oa3_converter.converters.format_converter import convert_file
 from har_oa3_converter.converters.har_to_oas3 import HarToOas3Converter
@@ -61,8 +62,9 @@ def debug_yaml_file(file_path):
 
 def debug_test_cli():
     """Debug the CLI test issues."""
-    from tests.cli.test_har_to_oas_cli import TestHarToOasCli
     import tempfile
+
+    from tests.cli.test_har_to_oas_cli import TestHarToOasCli
 
     # Create a test HAR file
     print("\nCreating test HAR file...")

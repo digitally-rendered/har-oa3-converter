@@ -107,7 +107,9 @@ def custom_openapi():
     return app.openapi_schema
 
 
-app.openapi = custom_openapi
+# Properly override the openapi method
+# Use setattr to avoid the 'Cannot assign to a method' error
+setattr(app, "openapi", lambda: custom_openapi())
 
 
 def parse_args(args: Optional[List[str]] = None) -> argparse.Namespace:

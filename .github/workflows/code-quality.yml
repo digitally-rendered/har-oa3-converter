@@ -16,59 +16,59 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
-    
+
     - name: Install Poetry
       run: |
         pipx install poetry==1.7.1
         poetry --version
-    
+
     - name: Install dependencies
       run: |
         poetry install
-    
+
     - name: Check formatting with black
       run: |
         poetry run black --check --config pyproject.toml .
-        
+
     - name: Check imports with isort
       run: |
         poetry run isort --check-only --profile black har_oa3_converter tests
-        
+
     - name: Type checking with mypy (non-blocking)
       run: |
         # Run mypy but don't fail the build if there are errors
         poetry run mypy har_oa3_converter || echo "Type checking failed but continuing build"
       continue-on-error: true
-    
+
     - name: Lint with pylint
       run: |
         # Exclude files causing AST parsing issues
         poetry run pylint --rcfile=.pylintrc $(find har_oa3_converter tests -name "*.py" | grep -v "har_oa3_converter/converter.py" | grep -v "har_oa3_converter/schemas/json_schemas.py")
       continue-on-error: true  # Don't fail the build on lint errors initially
-    
+
     - name: Generate pylint report
       id: pylint_report
       if: always()
       run: |
         # Ensure we set a default value
         echo "lint_result=failure" >> $GITHUB_OUTPUT
-        
+
         # Run pylint and capture the output, excluding the problematic files
         if poetry run pylint --rcfile=.pylintrc $(find har_oa3_converter tests -name "*.py" | grep -v "har_oa3_converter/converter.py" | grep -v "har_oa3_converter/schemas/json_schemas.py") --output-format=text:pylint-report.txt,json:pylint-report.json; then
           echo "lint_result=success" >> $GITHUB_OUTPUT
         fi
-        
+
         # Make sure the file exists even if pylint fails
         if [ ! -f pylint-report.txt ]; then
           echo "Your code has been rated at 0.00/10" > pylint-report.txt
         fi
       continue-on-error: true
-    
+
     - name: Upload lint reports as artifacts
       if: always()
       uses: actions/upload-artifact@v4
@@ -82,7 +82,7 @@ jobs:
       if: always()
       run: |
         echo "## Python ${{ matrix.python-version }} Lint Results" >> $GITHUB_STEP_SUMMARY
-        
+
         # Read pylint score from report file
         if [ -f pylint-report.txt ]; then
           SCORE=$(grep "Your code has been rated at" pylint-report.txt | grep -o "[0-9.]\+/10" || echo "0.00/10")

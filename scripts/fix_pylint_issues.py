@@ -14,7 +14,6 @@ import re
 import sys
 from pathlib import Path
 
-
 DIRECTORIES_TO_FIX = [
     "har_oa3_converter",
     "tests",

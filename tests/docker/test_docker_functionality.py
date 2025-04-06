@@ -234,27 +234,35 @@ def test_har_to_openapi_conversion(docker_image, sample_har_file):
 
         # Verify the output file exists and contains OpenAPI content
         assert os.path.exists(output_path), "Output file does not exist"
-        
+
         # Check file size to ensure it's not empty
         file_size = os.path.getsize(output_path)
         assert file_size > 0, f"Output file is empty (size: {file_size} bytes)"
-        
+
         # Read the raw content for debugging
         with open(output_path, "r") as f:
             raw_content = f.read()
-            
+
         # Print the first 500 characters of the file for debugging
         print(f"Output file content (first 500 chars):\n{raw_content[:500]}...")
-        
+
         # Try to load the YAML content
         try:
             content = yaml.safe_load(raw_content)
             assert content is not None, "YAML content is None after loading"
-            assert isinstance(content, dict), f"YAML content is not a dictionary: {type(content)}"
-            assert "openapi" in content, f"'openapi' key not found in content keys: {list(content.keys() if isinstance(content, dict) else [])}"
-            assert "paths" in content, f"'paths' key not found in content keys: {list(content.keys() if isinstance(content, dict) else [])}"
+            assert isinstance(
+                content, dict
+            ), f"YAML content is not a dictionary: {type(content)}"
+            assert (
+                "openapi" in content
+            ), f"'openapi' key not found in content keys: {list(content.keys() if isinstance(content, dict) else [])}"
+            assert (
+                "paths" in content
+            ), f"'paths' key not found in content keys: {list(content.keys() if isinstance(content, dict) else [])}"
             # Verify API paths from the sample HAR are included
-            assert "/api/users" in content["paths"], f"'/api/users' path not found in paths: {list(content['paths'].keys() if isinstance(content.get('paths'), dict) else [])}"
+            assert (
+                "/api/users" in content["paths"]
+            ), f"'/api/users' path not found in paths: {list(content['paths'].keys() if isinstance(content.get('paths'), dict) else [])}"
         except Exception as e:
             print(f"Error parsing YAML content: {e}")
             print(f"Raw content: {raw_content}")
@@ -293,28 +301,38 @@ def test_command_with_options(docker_image, sample_har_file):
 
         # Verify the output file exists and contains the custom options
         assert os.path.exists(output_path), "Output file does not exist"
-        
+
         # Check file size to ensure it's not empty
         file_size = os.path.getsize(output_path)
         assert file_size > 0, f"Output file is empty (size: {file_size} bytes)"
-        
+
         # Read the raw content for debugging
         with open(output_path, "r") as f:
             raw_content = f.read()
-            
+
         # Print the first 500 characters of the file for debugging
         print(f"Output file content (first 500 chars):\n{raw_content[:500]}...")
-        
+
         # Try to load the YAML content
         try:
             content = yaml.safe_load(raw_content)
             assert content is not None, "YAML content is None after loading"
-            assert isinstance(content, dict), f"YAML content is not a dictionary: {type(content)}"
-            assert "info" in content, f"'info' key not found in content keys: {list(content.keys() if isinstance(content, dict) else [])}"
-            assert "paths" in content, f"'paths' key not found in content keys: {list(content.keys() if isinstance(content, dict) else [])}"
-            assert "openapi" in content, f"'openapi' key not found in content keys: {list(content.keys() if isinstance(content, dict) else [])}"
+            assert isinstance(
+                content, dict
+            ), f"YAML content is not a dictionary: {type(content)}"
+            assert (
+                "info" in content
+            ), f"'info' key not found in content keys: {list(content.keys() if isinstance(content, dict) else [])}"
+            assert (
+                "paths" in content
+            ), f"'paths' key not found in content keys: {list(content.keys() if isinstance(content, dict) else [])}"
+            assert (
+                "openapi" in content
+            ), f"'openapi' key not found in content keys: {list(content.keys() if isinstance(content, dict) else [])}"
             # Basic verification of path from sample data
-            assert "/api/users" in content["paths"], f"'/api/users' path not found in paths: {list(content['paths'].keys() if isinstance(content.get('paths'), dict) else [])}"
+            assert (
+                "/api/users" in content["paths"]
+            ), f"'/api/users' path not found in paths: {list(content['paths'].keys() if isinstance(content.get('paths'), dict) else [])}"
         except Exception as e:
             print(f"Error parsing YAML content: {e}")
             print(f"Raw content: {raw_content}")

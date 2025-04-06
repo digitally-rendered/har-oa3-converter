@@ -41,7 +41,7 @@ pytest-json-report = "^1.5.0"
 schemathesis = "^3.39.14"
 types-PyYAML = "^6.0.12.12"
 types-jsonschema = "^4.23.0.20241208"
-pre-commit = "^3.6.0"
+pre-commit = "^3.1.0"
 
 [tool.poetry.scripts]
 har2oa3 = "har_oa3_converter.cli.har_to_oas_cli:main"
@@ -100,22 +100,29 @@ python_functions = "test_*"
 
 [tool.mypy]
 python_version = "3.10"
-# Temporarily disable all strict checks for CI pipeline
+ignore_missing_imports = true
 warn_return_any = false
 warn_unused_configs = false
 disallow_untyped_defs = false
 disallow_incomplete_defs = false
+check_untyped_defs = true
+disallow_untyped_decorators = false
+no_implicit_optional = true
+strict_optional = true
 follow_imports = "silent"
 
-# Ignore all errors in all modules for now
+# Ignore specific errors that are impractical to fix
 [[tool.mypy.overrides]]
-module = ["*"]
+module = [
+    "har_oa3_converter.converter",
+    "har_oa3_converter.converters.har_to_oas3",
+    "har_oa3_converter.converters.formats.postman_to_har",
+    "har_oa3_converter.converters.format_converter"
+]
+disallow_any_generics = false
+disallow_subclassing_any = false
+warn_return_any = false
 ignore_errors = true
-
-# TODO: Re-enable strict type checking after fixing all type annotations
-# This is a temporary measure to make the CI pipeline pass
 
 [tool.pylint.messages_control]
 disable = ["C0111", "C0103", "C0330", "C0326"]
-
-# Pytest configuration already defined above

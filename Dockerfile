@@ -37,4 +37,3 @@ USER appuser
 
 # Default command when no arguments provided
 CMD ["har2oa3", "--help"]
-

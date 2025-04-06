@@ -206,10 +206,10 @@ docker run --rm -v $(pwd):/data har-oa3-converter:latest format \
   --title "Docker API" \
   --version "1.0.0"# Step 1: Set up Rancher Desktop
   ./scripts/setup_rancher_desktop.sh
-  
+
   # Step 2: Verify Docker is ready for testing
   ./scripts/verify_docker_for_testing.sh
-  
+
   # Step 3: Run your Docker tests
   ./scripts/run_tests_in_docker.sh
 
@@ -471,7 +471,7 @@ with open("input.har", "rb") as har_file:
         "version": "1.0.0",
         "description": "API generated from HAR file"
     }
-    
+
     # Get response as JSON
     response = requests.post(
         "http://localhost:8000/api/convert/openapi3",
@@ -479,7 +479,7 @@ with open("input.har", "rb") as har_file:
         data=data,
         headers={"Accept": "application/json"}
     )
-    
+
     # Save the result
     if response.status_code == 200:
         with open("output.json", "w") as f:
@@ -528,7 +528,7 @@ poetry run pytest --cov=har_oa3_converter --cov-report=html:reports/coverage
 # Generate both HTML and JSON reports
 poetry run pytest --cov=har_oa3_converter --cov-report=html:reports/coverage \
   --html=reports/pytest.html --json-report --json-report-file=reports/pytest.json
-  
+
 # Run tests in parallel for faster execution
 poetry run pytest -xvs -n auto
 ```

@@ -158,8 +158,12 @@ async def list_formats(
         )
         return Response(content=yaml_content, media_type="application/yaml")
 
-    # Default JSON response
-    return response_data
+    # Default JSON response - explicitly convert to Response to satisfy type checker
+    return Response(
+        content=response_data.model_dump_json(),
+        media_type="application/json",
+        headers={"Content-Type": "application/json"},
+    )
 
 
 @router.post(
@@ -234,10 +238,8 @@ async def convert_document(
     # Auto-detect source format if not provided
     if not source_format:
         # Check if it's a HAR file by filename or content type
-        if (
-            file.filename.lower().endswith(".har")
-            or "har" in input_content_type.lower()
-        ):
+        filename = file.filename or ""
+        if filename.lower().endswith(".har") or "har" in input_content_type.lower():
             source_format = "har"
         elif "json" in input_content_type:
             # For JSON files, we'll try to determine if it's openapi3 or swagger during conversion

@@ -16,21 +16,21 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
-    
+
     - name: Install Poetry
       run: |
         pipx install poetry==1.7.1
         poetry --version
-    
+
     - name: Install dependencies
       run: |
         poetry install
-    
+
     - name: Run basic import test
       id: import_test
       run: |
@@ -41,7 +41,7 @@ jobs:
           echo "test_result=success" >> $GITHUB_OUTPUT
         fi
       continue-on-error: true
-    
+
     - name: Run minimal functionality test
       id: minimal_test
       run: |
@@ -56,26 +56,26 @@ jobs:
           echo "test_result=failure" >> $GITHUB_OUTPUT
         fi
       continue-on-error: true
-    
+
     - name: Test Summary
       run: |
         echo "## Python ${{ matrix.python-version }} Compatibility" >> $GITHUB_STEP_SUMMARY
         # Set default values in case outputs are empty
         IMPORT_RESULT="${{ steps.import_test.outputs.test_result || 'failure' }}"
         MINIMAL_RESULT="${{ steps.minimal_test.outputs.test_result || 'failure' }}"
-        
+
         if [ "$IMPORT_RESULT" == "success" ]; then
           echo "✅ Import test passed" >> $GITHUB_STEP_SUMMARY
         else
           echo "❌ Import test failed" >> $GITHUB_STEP_SUMMARY
         fi
-        
+
         if [ "$MINIMAL_RESULT" == "success" ]; then
           echo "✅ Minimal functionality test passed" >> $GITHUB_STEP_SUMMARY
         else
           echo "❌ Minimal functionality test failed" >> $GITHUB_STEP_SUMMARY
         fi
-        
+
         if [ "$IMPORT_RESULT" == "success" ] && [ "$MINIMAL_RESULT" == "success" ]; then
           echo "### ✅ Python ${{ matrix.python-version }} is fully compatible" >> $GITHUB_STEP_SUMMARY
         else
@@ -88,17 +88,17 @@ jobs:
     needs: compatibility
     runs-on: ubuntu-latest
     if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
-    
+
     steps:
     - uses: actions/checkout@v4
       with:
         ref: main
-    
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
-    
+
     - name: Generate Python compatibility badge
       run: |
         mkdir -p scripts
@@ -125,14 +125,14 @@ jobs:
           </g>
         </svg>
         EOL
-    
+
     - name: Update README with compatibility badge
       run: |
         if ! grep -q "python-versions-badge.svg" README.md; then
           # Add the badge after the existing badges
           sed -i '/^\[\!\[/a [![Python Versions](https://raw.githubusercontent.com/digitally-rendered/har-oa3-converter/main/scripts/python-versions-badge.svg)](https://github.com/digitally-rendered/har-oa3-converter/actions/workflows/python-compatibility.yml)' README.md
         fi
-    
+
     - name: Commit and push changes
       run: |
         git config --local user.email "action@github.com"

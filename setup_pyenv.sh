@@ -53,11 +53,11 @@ esac
 # Add pyenv to shell configuration if needed
 if [ -n "$SHELL_CONFIG_FILE" ]; then
     echo "Configuring pyenv in $SHELL_CONFIG_FILE..."
-    
+
     # Check if pyenv config already exists
     if ! grep -q "pyenv init" "$SHELL_CONFIG_FILE"; then
         echo "Adding pyenv initialization to $SHELL_CONFIG_FILE..."
-        
+
         cat >> "$SHELL_CONFIG_FILE" << 'EOF'
 
 # pyenv setup
@@ -66,7 +66,7 @@ command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)"
 eval "$(pyenv virtualenv-init -)"
 EOF
-        
+
         echo "Shell configuration updated. You'll need to restart your shell or run:"
         echo "  source $SHELL_CONFIG_FILE"
     else
@@ -94,12 +94,12 @@ if [ -n "$PYTHON_VERSIONS" ]; then
         echo "Installing Python $version..."
         pyenv install "$version" || echo "Failed to install Python $version"
     done
-    
+
     # Set the first version as global
     FIRST_VERSION=$(echo "$PYTHON_VERSIONS" | awk '{print $1}')
     echo "Setting Python $FIRST_VERSION as global default..."
     pyenv global "$FIRST_VERSION"
-    
+
     echo "Python $FIRST_VERSION is now your default Python version."
 fi
 
