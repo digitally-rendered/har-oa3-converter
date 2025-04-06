@@ -38,7 +38,6 @@ def test_api_timeout_exception(client):
             "har_oa3_converter.api.routes.convert_file",
             side_effect=TimeoutError("Schema validation timeout"),
         ):
-
             # Send the API request with the test file
             with open(tmp_path, "rb") as f:
                 response = client.post(
@@ -83,7 +82,6 @@ def test_api_memory_exception(client):
             "har_oa3_converter.api.routes.convert_file",
             side_effect=MemoryError("Not enough memory"),
         ):
-
             # Send the API request with the test file
             with open(tmp_path, "rb") as f:
                 response = client.post(

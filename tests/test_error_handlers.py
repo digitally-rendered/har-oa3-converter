@@ -33,7 +33,6 @@ def test_timeout_error_handler(client):
         "har_oa3_converter.api.routes.convert_file",
         side_effect=TimeoutError("Schema validation timeout"),
     ):
-
         # Make the API request
         response = client.post(
             f"/api/convert/{ConversionFormat.OPENAPI3.value}",
@@ -66,7 +65,6 @@ def test_memory_error_handler(client):
         "har_oa3_converter.api.routes.convert_file",
         side_effect=MemoryError("Not enough memory"),
     ):
-
         # Make the API request
         response = client.post(
             f"/api/convert/{ConversionFormat.OPENAPI3.value}",

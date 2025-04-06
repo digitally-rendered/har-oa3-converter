@@ -86,7 +86,6 @@ def test_api_schema_validation_timeout(client):
         "har_oa3_converter.api.routes.convert_file",
         side_effect=TimeoutError("Schema validation timeout"),
     ):
-
         # Send the request directly using the test client
         response = client.post(
             f"/api/convert/{ConversionFormat.OPENAPI3.value}",
