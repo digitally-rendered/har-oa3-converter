@@ -33,20 +33,40 @@ jobs:
     
     - name: Build Docker image for tests
       run: |
-        docker build -t har-oa3-converter:latest .
+        # Build version-specific Docker image
+        PYTHON_VERSION=${{ matrix.python-version }}
+        # Replace dots with underscores for Docker tag compatibility
+        DOCKER_TAG=$(echo $PYTHON_VERSION | tr '.' '_')
+        
+        # Build the Docker image with Python version-specific tag
+        docker build --build-arg PYTHON_VERSION=$PYTHON_VERSION -t har-oa3-converter:py$DOCKER_TAG .
+        
+        # Also tag as latest for backward compatibility
+        docker tag har-oa3-converter:py$DOCKER_TAG har-oa3-converter:latest
+        
+        # List available images
         docker images
     
     - name: Run tests with pytest and coverage
       id: tests
       run: |
-        poetry run pytest --cov=har_oa3_converter --cov-report=xml --cov-report=term --html=pytest-report.html --json-report --json-report-file=pytest-report.json -v
-        echo "test_result=success" >> $GITHUB_OUTPUT
+        # Set default value first in case of errors
+        echo "test_result=failure" >> $GITHUB_OUTPUT
+        
+        # Run tests and capture exit code
+        if poetry run pytest --cov=har_oa3_converter --cov-report=xml --cov-report=term --html=pytest-report.html --json-report --json-report-file=pytest-report.json -v; then
+          echo "test_result=success" >> $GITHUB_OUTPUT
+        fi
       continue-on-error: true
 
     - name: Test Summary
       run: |
         echo "## Python ${{ matrix.python-version }} Test Results" >> $GITHUB_STEP_SUMMARY
-        if [ "${{ steps.tests.outputs.test_result }}" == "success" ]; then
+        
+        # Set default value for test result if it's empty
+        TEST_RESULT="${{ steps.tests.outputs.test_result || 'failure' }}"
+        
+        if [ "$TEST_RESULT" == "success" ]; then
           echo "✅ All tests passed" >> $GITHUB_STEP_SUMMARY
         else
           echo "❌ Some tests failed" >> $GITHUB_STEP_SUMMARY
@@ -54,10 +74,15 @@ jobs:
         fi
         
         # Add coverage summary
-        echo "\n### Coverage Report" >> $GITHUB_STEP_SUMMARY
-        COVERAGE=$(cat coverage.xml | grep -o 'line-rate="[0-9.]\+"' | head -1 | cut -d"" -f2)
-        COVERAGE_PCT=$(echo "$COVERAGE * 100" | bc -l | xargs printf "%.2f")
-        echo "- Line Coverage: $COVERAGE_PCT%" >> $GITHUB_STEP_SUMMARY
+        if [ -f coverage.xml ]; then
+          echo "\n### Coverage Report" >> $GITHUB_STEP_SUMMARY
+          COVERAGE=$(cat coverage.xml | grep -o 'line-rate="[0-9.]+"' | head -1 | cut -d"" -f2 || echo "0")
+          COVERAGE_PCT=$(echo "$COVERAGE * 100" | bc -l | xargs printf "%.2f" || echo "0.00")
+          echo "- Line Coverage: $COVERAGE_PCT%" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "\n### Coverage Report" >> $GITHUB_STEP_SUMMARY
+          echo "- Coverage report not generated" >> $GITHUB_STEP_SUMMARY
+        fi
     
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
