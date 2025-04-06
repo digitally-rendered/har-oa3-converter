@@ -37,8 +37,8 @@ jobs:
     
     - name: Lint with pylint
       run: |
-        # Exclude the converter.py file that's causing AST parsing issues
-        poetry run pylint --rcfile=.pylintrc $(find har_oa3_converter tests -name "*.py" | grep -v "har_oa3_converter/converter.py")
+        # Exclude files causing AST parsing issues
+        poetry run pylint --rcfile=.pylintrc $(find har_oa3_converter tests -name "*.py" | grep -v "har_oa3_converter/converter.py" | grep -v "har_oa3_converter/schemas/json_schemas.py")
       continue-on-error: true  # Don't fail the build on lint errors initially
     
     - name: Generate pylint report
@@ -48,8 +48,8 @@ jobs:
         # Ensure we set a default value
         echo "lint_result=failure" >> $GITHUB_OUTPUT
         
-        # Run pylint and capture the output, excluding the problematic file
-        if poetry run pylint --rcfile=.pylintrc $(find har_oa3_converter tests -name "*.py" | grep -v "har_oa3_converter/converter.py") --output-format=text:pylint-report.txt,json:pylint-report.json; then
+        # Run pylint and capture the output, excluding the problematic files
+        if poetry run pylint --rcfile=.pylintrc $(find har_oa3_converter tests -name "*.py" | grep -v "har_oa3_converter/converter.py" | grep -v "har_oa3_converter/schemas/json_schemas.py") --output-format=text:pylint-report.txt,json:pylint-report.json; then
           echo "lint_result=success" >> $GITHUB_OUTPUT
         fi
         
