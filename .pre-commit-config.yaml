@@ -66,3 +66,38 @@ repos:
         # but still shows warnings
         verbose: true
         stages: [manual]
+
+      - id: radon-cc
+        name: radon-cc
+        description: 'Check code complexity with Radon'
+        entry: poetry run radon cc
+        language: system
+        types: [python]
+        exclude: '^tests/'
+        args: [
+          '--min=B',  # Minimum complexity rank
+          '-s',  # Show complexity score
+          '-a',  # Show average complexity
+          '-e', 'tests/,docs/,.venv/,dist/,build/',  # Exclude patterns
+        ]
+        # Non-blocking to provide feedback without preventing commits
+        verbose: true
+        # Use manual stage initially until the hook is working properly
+        stages: [manual]
+
+      - id: radon-mi
+        name: radon-mi
+        description: 'Check maintainability index with Radon'
+        entry: poetry run radon mi
+        language: system
+        types: [python]
+        exclude: '^tests/'
+        args: [
+          '--min=B',  # Minimum maintainability rank
+          '-s',  # Show more information
+          '-e', 'tests/,docs/,.venv/,dist/,build/',  # Exclude patterns
+        ]
+        # Non-blocking to provide feedback without preventing commits
+        verbose: true
+        # Use manual stage initially until the hook is working properly
+        stages: [manual]
