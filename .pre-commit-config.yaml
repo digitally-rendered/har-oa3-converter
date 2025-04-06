@@ -1,0 +1,68 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+default_language_version:
+  python: python3.10  # Specify a more compatible Python version
+
+# Define fail_fast as false to run all hooks even if some fail
+fail_fast: false
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+
+  - repo: local
+    hooks:
+      - id: black
+        name: black
+        description: 'Format Python code with Black'
+        entry: poetry run black
+        language: system
+        types: [python]
+        require_serial: true
+        # Always run black to auto-format code
+        stages: [commit]
+
+      - id: isort
+        name: isort
+        description: 'Sort Python imports with isort'
+        entry: poetry run isort
+        language: system
+        types: [python]
+        require_serial: true
+        # Always run isort to auto-format imports
+        stages: [commit]
+
+      - id: pylint
+        name: pylint
+        description: 'Lint Python code with pylint (non-blocking)'
+        entry: poetry run pylint
+        language: system
+        types: [python]
+        exclude: '^(har_oa3_converter/converter\.py|har_oa3_converter/schemas/json_schemas\.py)$'
+        args: [
+          '--rcfile=pyproject.toml',
+        ]
+        # Make pylint non-blocking so it doesn't prevent commits
+        # but still shows warnings
+        verbose: true
+        stages: [manual]
+
+      - id: mypy
+        name: mypy
+        description: 'Check Python types with mypy (non-blocking)'
+        entry: poetry run mypy
+        language: system
+        types: [python]
+        exclude: '^tests/'
+        args: [
+          '--config-file=pyproject.toml',
+        ]
+        # Make mypy non-blocking so it doesn't prevent commits
+        # but still shows warnings
+        verbose: true
+        stages: [manual]

@@ -1,0 +1,84 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Distribution / packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Testing / Coverage
+.coverage
+.coverage.*
+coverage.xml
+coverage.json
+htmlcov/
+reports/
+.pytest_cache/
+.tox/
+nosetests.xml
+*.cover
+.hypothesis/
+
+# Environment
+.env
+.venv
+env/
+venv/
+ENV/
+.python-version
+.direnv/
+# poetry.lock  # Uncomment if you want to ignore the lock file
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS specific
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Project specific
+# Temporary files created during tests
+tmp/
+temp/
+
+# Output files
+*.har.json
+*.openapi3.json
+*.swagger.json
+*.openapi3.yaml
+*.swagger.yaml
+
+# Pytest HTML reports
+*.html
+*.json-report
+
+# Log files
+*.log
+
+# Generated documentation
+docs/_build/

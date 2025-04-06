@@ -1,0 +1,82 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "API generated from HAR",
+    "version": "1.0.0",
+    "description": "API specification generated from HAR file"
+  },
+  "paths": {
+    "/api/users": {
+      "get": {
+        "summary": "GET /api/users",
+        "description": "",
+        "operationId": "get_api_users",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "1"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "application/json"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Response_data_item": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "Test User"
+          }
+        }
+      },
+      "Response_data": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Response_data_item"
+        }
+      },
+      "Response": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Response_data"
+          }
+        }
+      }
+    },
+    "requestBodies": {},
+    "responses": {}
+  }
+}

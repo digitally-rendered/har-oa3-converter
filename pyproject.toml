@@ -1,0 +1,128 @@
+[tool.poetry]
+name = "har-oa3-converter"
+version = "0.1.0"
+description = "Convert HAR (HTTP Archive) files to OpenAPI 3 specification"
+authors = ["Your Name <your.email@example.com>"]
+readme = "README.md"
+repository = "https://github.com/yourusername/har-oa3-converter"
+license = "MIT"
+packages = [{include = "har_oa3_converter"}]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<4.0"
+pyyaml = "^6.0"
+jsonschema = "^4.17.3"
+typing-extensions = "^4.7.1"
+fastapi = "^0.110.0"
+uvicorn = {extras = ["standard"], version = "^0.27.0"}
+python-multipart = "^0.0.9"
+httpx = "^0.28.1"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.3.1"
+black = "^23.12.1"
+isort = "^5.12.0"
+mypy = "^1.3.0"
+pylint = "^2.17.4"
+pytest-cov = "^4.1.0"
+tox = "^4.6.0"
+pytest-xdist = "^3.6.1"
+pytest-html = "^4.1.1"
+pytest-json-report = "^1.5.0"
+schemathesis = "^3.39.14"
+types-PyYAML = "^6.0.12.12"
+types-jsonschema = "^4.23.0.20241208"
+pre-commit = "^3.1.0"
+
+[tool.poetry.scripts]
+har2oa3 = "har_oa3_converter.cli.har_to_oas_cli:main"
+api-convert = "har_oa3_converter.cli.format_cli:main"
+api-server = "har_oa3_converter.api.server:main"
+
+[tool.black]
+line-length = 88
+target-version = ['py310', 'py311', 'py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+include_trailing_comma = true
+use_parentheses = true
+ensure_newline_before_comments = true
+force_grid_wrap = 0
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+# Suppress specific deprecation warnings from Schemathesis
+filterwarnings = [
+    "ignore:jsonschema.exceptions.RefResolutionError is deprecated:DeprecationWarning",
+    "ignore:jsonschema.RefResolver is deprecated:DeprecationWarning"
+]
+
+# Code coverage configuration with additional reports
+# Added -n auto to enable parallel testing with pytest-xdist
+# Added --dist=loadfile to distribute tests by file for better isolation
+addopts = "--cov=har_oa3_converter --cov-report=html:reports/coverage --cov-report=xml:reports/coverage.xml --html=reports/pytest-report.html --json-report --json-report-file=reports/pytest-report.json --cov-report=term-missing -n auto --dist=loadfile"
+
+# General test settings
+console_output_style = "progress"
+testpaths = ["tests"]
+norecursedirs = [".git", "__pycache__", "*.egg-info", ".pytest_cache", "dist", "build"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true
+warn_return_any = false
+warn_unused_configs = false
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = true
+disallow_untyped_decorators = false
+no_implicit_optional = true
+strict_optional = true
+follow_imports = "silent"
+
+# Ignore specific errors that are impractical to fix
+[[tool.mypy.overrides]]
+module = [
+    "har_oa3_converter.converter",
+    "har_oa3_converter.converters.har_to_oas3",
+    "har_oa3_converter.converters.formats.postman_to_har",
+    "har_oa3_converter.converters.format_converter"
+]
+disallow_any_generics = false
+disallow_subclassing_any = false
+warn_return_any = false
+ignore_errors = true
+
+[tool.pylint.messages_control]
+disable = ["C0111", "C0103", "C0330", "C0326"]

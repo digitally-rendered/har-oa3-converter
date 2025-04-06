@@ -1,0 +1,154 @@
+name: Python Tests & Coverage
+
+on:
+  push:
+    branches: [ main, poetry-setup ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12', '3.13']
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install Poetry
+      run: |
+        pipx install poetry==1.7.1
+        poetry --version
+
+    - name: Install dependencies
+      run: |
+        poetry install
+
+    - name: Build Docker image for tests
+      run: |
+        # Build version-specific Docker image
+        PYTHON_VERSION=${{ matrix.python-version }}
+        # Replace dots with underscores for Docker tag compatibility
+        DOCKER_TAG=$(echo $PYTHON_VERSION | tr '.' '_')
+
+        # Build the Docker image with Python version-specific tag
+        docker build --build-arg PYTHON_VERSION=$PYTHON_VERSION -t har-oa3-converter:py$DOCKER_TAG .
+
+        # Also tag as latest for backward compatibility
+        docker tag har-oa3-converter:py$DOCKER_TAG har-oa3-converter:latest
+
+        # List available images
+        docker images
+
+    - name: Run tests with pytest and coverage
+      id: tests
+      run: |
+        # Set default value first in case of errors
+        echo "test_result=failure" >> $GITHUB_OUTPUT
+
+        # Run tests with comprehensive coverage reporting
+        if poetry run pytest --cov=har_oa3_converter --cov-report=xml --cov-report=html --cov-report=term --html=pytest-report.html --json-report --json-report-file=pytest-report.json --cov-branch -v; then
+          # Set success output using the current syntax
+          echo "test_result=success" >> $GITHUB_OUTPUT
+          echo "Tests passed successfully"
+        else
+          # Set failure output using the current syntax
+          echo "test_result=failure" >> $GITHUB_OUTPUT
+          echo "Tests failed"
+        fi
+      continue-on-error: true
+
+    - name: Test Summary
+      if: always()
+      run: |
+        echo "## Python ${{ matrix.python-version }} Test Results" >> $GITHUB_STEP_SUMMARY
+
+        # Get test result with a default value if not set
+        TEST_RESULT="${{ steps.tests.outputs.test_result || 'failure' }}"
+
+        # Print the raw output for debugging
+        echo "Raw test_result output: '$TEST_RESULT'"
+
+        # Normalize the test result to ensure it's either 'success' or 'failure'
+        if [ "$TEST_RESULT" = "success" ]; then
+          TEST_RESULT="success"
+        else
+          TEST_RESULT="failure"
+        fi
+
+        echo "Debug: Test result is '$TEST_RESULT'" >> $GITHUB_STEP_SUMMARY
+
+        if [ "$TEST_RESULT" = "success" ]; then
+          echo "✅ All tests passed" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ Some tests failed" >> $GITHUB_STEP_SUMMARY
+          # Don't exit with error yet, let's continue to show coverage
+        fi
+
+        # Add coverage summary
+        echo "### Coverage Report" >> $GITHUB_STEP_SUMMARY
+        if [ -f coverage.xml ]; then
+          # Check if the file exists and has content
+          if [ -s coverage.xml ]; then
+            # Try to extract coverage data with better error handling
+            COVERAGE=$(grep -o 'line-rate="[0-9.]+"' coverage.xml 2>/dev/null | head -1 | grep -o '[0-9.]+' 2>/dev/null || echo "0")
+            # Verify we got a valid number
+            if [[ $COVERAGE =~ ^[0-9]+\.?[0-9]*$ ]]; then
+              COVERAGE_PCT=$(echo "$COVERAGE * 100" | bc -l 2>/dev/null | xargs printf "%.2f" 2>/dev/null || echo "0.00")
+              echo "- Line Coverage: $COVERAGE_PCT%" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "- Unable to parse coverage data (invalid format)" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "- Coverage file exists but is empty" >> $GITHUB_STEP_SUMMARY
+          fi
+        else
+          echo "- Coverage report not generated" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        # Now exit with error if tests failed
+        if [ "$TEST_RESULT" != "success" ]; then
+          exit 1
+        fi
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        fail_ci_if_error: false
+
+    - name: Generate coverage badge
+      if: matrix.python-version == '3.11'  # Only generate badge for one Python version
+      run: |
+        poetry run python -m pip install coverage-badge
+        poetry run coverage-badge -o coverage-badge.svg
+
+    - name: Check coverage threshold
+      run: |
+        COVERAGE=$(poetry run coverage report | grep TOTAL | awk '{print $NF}' | sed 's/%//')
+        echo "Current coverage: $COVERAGE%"
+
+        # Check if coverage meets the threshold (100%)
+        if (( $(echo "$COVERAGE < 100" | bc -l) )); then
+          echo "⚠️ Warning: Coverage is below 100%" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "✅ Coverage meets the 100% target" >> $GITHUB_STEP_SUMMARY
+        fi
+
+    - name: Upload test reports as artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-reports-${{ matrix.python-version }}
+        path: |
+          pytest-report.html
+          pytest-report.json
+          coverage.xml
+          htmlcov/
+          coverage-badge.svg
