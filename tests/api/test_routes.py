@@ -67,7 +67,7 @@ class TestApiRoutes:
 
         data = response.json()
         assert "openapi" in data
-        assert data["openapi"] == "3.0.0"
+        assert data["openapi"] == "3.0.3"
         assert "info" in data
         assert data["info"]["title"] == "Test API"
         assert "paths" in data
@@ -138,7 +138,7 @@ class TestApiRoutes:
         # Check that response is valid YAML
         data = yaml.safe_load(response.content)
         assert "openapi" in data
-        assert data["openapi"] == "3.0.0"
+        assert data["openapi"] == "3.0.3"
         assert "paths" in data
         assert "/api/users" in data["paths"]
 

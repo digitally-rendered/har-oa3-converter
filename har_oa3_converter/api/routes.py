@@ -18,7 +18,7 @@ from har_oa3_converter.api.models import (
     FormatInfo,
     FormatResponse,
 )
-from har_oa3_converter.converters.format_converter import (
+from har_oa3_converter.converters.format_registry import (
     convert_file,
     get_available_formats,
     get_converter_for_formats,
@@ -272,6 +272,9 @@ async def convert_document(
         validate_schema = not conversion_options.pop('skip_validation', False)
         
         try:
+            # The convert_file function now handles validation internally
+            # and returns a tuple of (format_name, error_message) for guess_format_from_file
+            # and (is_valid, format_name, error_message) for validate_file
             result = convert_file(
                 input_path,
                 output_path,
@@ -317,24 +320,60 @@ async def convert_document(
         if "application/json" in content_type:
             # Return JSON response
             if not isinstance(result, dict):
-                # Load file using FileHandler if needed
-                result = FileHandler.load(output_path)
-        
-            return Response(
-                # Format as JSON with consistent formatting
-                content=json.dumps(result, indent=2) if isinstance(result, dict) else converted_content,
-                media_type="application/json"
-            )
+                try:
+                    # Load file using FileHandler if needed
+                    result = FileHandler.load(output_path)
+                except Exception as e:
+                    # If we can't load the file, use the converted content directly
+                    return Response(
+                        content=converted_content,
+                        media_type="application/json"
+                    )
+            
+            # Ensure we have a valid result to return
+            if result:
+                return Response(
+                    # Format as JSON with consistent formatting
+                    content=json.dumps(result, indent=2),
+                    media_type="application/json"
+                )
+            else:
+                # If result is empty, use the converted content directly
+                return Response(
+                    content=converted_content,
+                    media_type="application/json"
+                )
         elif "application/yaml" in content_type or "text/yaml" in content_type:
             # Return YAML response
-            if output_suffix == ".json":
-                # Convert JSON to YAML using FileHandler
-                if not isinstance(result, dict):
-                    result = FileHandler.load(output_path)
-                # Use the imported yaml module (already imported at the top of the file)
-                yaml_content = yaml.dump(result, default_flow_style=False, sort_keys=False)
-            else:
-                # Use the content directly if it's already in YAML format
+            try:
+                if output_suffix == ".json":
+                    # Convert JSON to YAML using FileHandler
+                    if not isinstance(result, dict):
+                        try:
+                            result = FileHandler.load(output_path)
+                        except Exception as e:
+                            # If we can't load the file as JSON, try to parse the content directly
+                            try:
+                                result = json.loads(converted_content)
+                            except Exception as e2:
+                                # If we can't parse as JSON, return the content directly
+                                return Response(
+                                    content=converted_content,
+                                    media_type="application/yaml"
+                                )
+                    
+                    # Ensure we have a valid result to convert to YAML
+                    if result:
+                        # Use the imported yaml module (already imported at the top of the file)
+                        yaml_content = yaml.dump(result, default_flow_style=False, sort_keys=False)
+                    else:
+                        # If result is empty, use the converted content directly
+                        yaml_content = converted_content
+                else:
+                    # Use the content directly if it's already in YAML format
+                    yaml_content = converted_content
+            except Exception as e:
+                # Fallback to returning the content directly if any error occurs
                 yaml_content = converted_content
         
             return Response(
