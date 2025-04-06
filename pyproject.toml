@@ -41,6 +41,7 @@ pytest-json-report = "^1.5.0"
 schemathesis = "^3.39.14"
 types-PyYAML = "^6.0.12.12"
 types-jsonschema = "^4.23.0.20241208"
+pre-commit = "^3.6.0"
 
 [tool.poetry.scripts]
 har2oa3 = "har_oa3_converter.cli.har_to_oas_cli:main"
