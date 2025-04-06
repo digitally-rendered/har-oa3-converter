@@ -58,7 +58,9 @@ filterwarnings = [
 ]
 
 # Code coverage configuration with additional reports
-addopts = "--cov=har_oa3_converter --cov-report=html:reports/coverage --cov-report=xml:reports/coverage.xml --html=reports/pytest-report.html --json-report --json-report-file=reports/pytest-report.json --cov-report=term-missing"
+# Added -n auto to enable parallel testing with pytest-xdist
+# Added --dist=loadfile to distribute tests by file for better isolation
+addopts = "--cov=har_oa3_converter --cov-report=html:reports/coverage --cov-report=xml:reports/coverage.xml --html=reports/pytest-report.html --json-report --json-report-file=reports/pytest-report.json --cov-report=term-missing -n auto --dist=loadfile"
 
 # General test settings
 console_output_style = "progress"
