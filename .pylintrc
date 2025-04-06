@@ -1,0 +1,122 @@
+[MASTER]
+# Python version-specific settings
+python-minimum-version=3.8
+
+# Add files or directories to the blacklist
+ignore=.git,__pycache__,docs/,build/,dist/,.venv/,.tox/
+
+# Use multiple processes to speed up Pylint
+jobs=4
+
+# Control the amount of potential inferred values when inferring a single
+# object. This can help the performance when dealing with large functions or
+# complex, nested conditions.
+limit-inference-results=100
+
+# List of plugins (as comma separated values of python module names) to load
+load-plugins=
+
+# Pickle collected data for later comparisons
+persistent=yes
+
+# When enabled, pylint would attempt to guess common misconfiguration and emit
+# user-friendly hints instead of false-positive error messages
+suggestion-mode=yes
+
+[MESSAGES CONTROL]
+# Only show warnings with the listed confidence levels. Leave empty to show all.
+confidence=HIGH,
+
+# Disable specific messages
+disable=missing-docstring,
+        invalid-name,
+        line-too-long,
+        too-many-arguments,
+        too-many-locals,
+        too-many-branches,
+        too-many-statements,
+        too-many-instance-attributes,
+        too-few-public-methods,
+        duplicate-code,
+        broad-except,
+        fixme,
+        protected-access,
+        import-outside-toplevel,
+        consider-using-with,
+        consider-using-f-string,
+        unspecified-encoding,
+        unnecessary-lambda-assignment,
+        no-name-in-module,
+        no-member,
+        unused-argument,
+        unused-variable,
+        redefined-outer-name,
+        redefined-builtin,
+        global-statement,
+        bare-except,
+        try-except-raise
+
+[FORMAT]
+# Maximum number of characters on a single line
+max-line-length=100
+
+# Expected format of line ending, e.g. empty (any line ending), LF or CRLF
+expected-line-ending-format=
+
+# Regexp for a line that is allowed to be longer than the limit
+ignore-long-lines=^\s*(# )?<?https?://\S+>?$
+
+# Number of spaces of indent required inside a hanging or continued line
+indent-after-paren=4
+
+# String used as indentation unit
+indent-string='    '
+
+[SIMILARITIES]
+# Minimum lines number of a similarity
+min-similarity-lines=10
+
+# Ignore comments when computing similarities
+ignore-comments=yes
+
+# Ignore docstrings when computing similarities
+ignore-docstrings=yes
+
+# Ignore imports when computing similarities
+ignore-imports=yes
+
+[DESIGN]
+# Maximum number of arguments for function / method
+max-args=10
+
+# Maximum number of attributes for a class
+max-attributes=15
+
+# Maximum number of boolean expressions in an if statement (see R0916)
+max-bool-expr=5
+
+# Maximum number of branch for function / method body
+max-branches=15
+
+# Maximum number of locals for function / method body
+max-locals=25
+
+# Maximum number of parents for a class (see R0901)
+max-parents=7
+
+# Maximum number of public methods for a class (see R0904)
+max-public-methods=25
+
+# Maximum number of return / yield for function / method body
+max-returns=10
+
+# Maximum number of statements in function / method body
+max-statements=50
+
+# Minimum number of public methods for a class
+min-public-methods=1
+
+[EXCEPTIONS]
+# Exceptions that will emit a warning when caught
+overgeneral-exceptions=BaseException,
+                       Exception
