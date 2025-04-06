@@ -41,9 +41,21 @@ jobs:
       continue-on-error: true  # Don't fail the build on lint errors initially
     
     - name: Generate pylint report
+      id: pylint_report
       if: always()
       run: |
-        poetry run pylint --rcfile=.pylintrc har_oa3_converter tests --output-format=text:pylint-report.txt,json:pylint-report.json
+        # Ensure we set a default value
+        echo "lint_result=failure" >> $GITHUB_OUTPUT
+        
+        # Run pylint and capture the output
+        if poetry run pylint --rcfile=.pylintrc har_oa3_converter tests --output-format=text:pylint-report.txt,json:pylint-report.json; then
+          echo "lint_result=success" >> $GITHUB_OUTPUT
+        fi
+        
+        # Make sure the file exists even if pylint fails
+        if [ ! -f pylint-report.txt ]; then
+          echo "Your code has been rated at 0.00/10" > pylint-report.txt
+        fi
       continue-on-error: true
     
     - name: Upload lint reports as artifacts
@@ -59,14 +71,18 @@ jobs:
       if: always()
       run: |
         echo "## Python ${{ matrix.python-version }} Lint Results" >> $GITHUB_STEP_SUMMARY
+        
+        # Read pylint score from report file
         if [ -f pylint-report.txt ]; then
-          SCORE=$(grep "Your code has been rated at" pylint-report.txt | grep -o "[0-9.]\+/10")
+          SCORE=$(grep "Your code has been rated at" pylint-report.txt | grep -o "[0-9.]\+/10" || echo "0.00/10")
           echo "- Pylint Score: $SCORE" >> $GITHUB_STEP_SUMMARY
         else
           echo "- Pylint report not available" >> $GITHUB_STEP_SUMMARY
         fi
 
-        if [ "${{ job.status }}" == "success" ]; then
+        # Use the lint result from the pylint report step
+        LINT_RESULT="${{ steps.pylint_report.outputs.lint_result || 'failure' }}"
+        if [ "$LINT_RESULT" == "success" ]; then
           echo "✅ All quality checks passed" >> $GITHUB_STEP_SUMMARY
         else
           echo "⚠️ Some quality checks failed" >> $GITHUB_STEP_SUMMARY
