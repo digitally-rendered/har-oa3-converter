@@ -79,7 +79,8 @@ schema = schemathesis.from_dict(
 @schema.parametrize()
 def test_api_formats_endpoint(case):
     """Test that the formats endpoint conforms to our schema."""
-    # Only test the GET /api/formats endpoint
+    # This test is specifically designed for the GET /api/formats endpoint
+    # Filter for the specific endpoint we want to test
     if case.path != "/api/formats" or case.method.lower() != "get":
         pytest.skip("This test only applies to GET /api/formats")
 
