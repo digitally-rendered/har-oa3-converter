@@ -895,9 +895,24 @@ def convert_file(
     Returns:
         Converted data or None if conversion failed
     """
+    print(f"DEBUG: Converting from '{source_path}' to '{target_path}'")
+
+    # Ensure source path is absolute
+    source_path = os.path.abspath(source_path)
+    target_path = os.path.abspath(target_path)
+
     # Verify source file exists
     if not os.path.exists(source_path):
         raise FileNotFoundError(f"Source file '{source_path}' not found")
+    else:
+        file_size = os.path.getsize(source_path)
+        print(f"DEBUG: Source file exists, size: {file_size} bytes")
+
+    # Ensure target directory exists
+    target_dir = os.path.dirname(target_path)
+    if not os.path.exists(target_dir):
+        print(f"DEBUG: Creating target directory: {target_dir}")
+        os.makedirs(target_dir, exist_ok=True)
 
     # Validate schema if requested
     if validate_schema:
@@ -930,6 +945,8 @@ def convert_file(
         if not target_format:
             raise ValueError(f"Could not determine target format for '{target_path}'")
 
+    print(f"DEBUG: Converting from format '{source_format}' to '{target_format}'")
+
     # Get converter
     converter_cls = get_converter_for_formats(source_format, target_format)
     if not converter_cls:
@@ -939,4 +956,15 @@ def convert_file(
 
     # Create converter and convert
     converter = converter_cls()
-    return converter.convert(source_path, target_path, **options)
+    result = converter.convert(source_path, target_path, **options)
+
+    # Verify file was written
+    if target_path and os.path.exists(target_path):
+        file_size = os.path.getsize(target_path)
+        print(f"DEBUG: Target file created, size: {file_size} bytes")
+        if file_size == 0:
+            print("WARNING: Target file is empty!")
+    else:
+        print(f"ERROR: Target file '{target_path}' was not created!")
+
+    return result
