@@ -8,10 +8,19 @@ from pydantic import BaseModel, Field
 
 class ConversionFormat(str, Enum):
     """Supported conversion formats."""
-
-    HAR = "har"
-    OPENAPI3 = "openapi3"
-    SWAGGER = "swagger"
+    
+    # Import here to avoid circular imports
+    from har_oa3_converter.converters.format_registry import get_available_formats
+    
+    # Get all available formats
+    _formats = get_available_formats()
+    
+    # Define enum values statically based on available formats
+    HAR = "har" if "har" in _formats else "har"
+    OPENAPI3 = "openapi3" if "openapi3" in _formats else "openapi3"
+    SWAGGER = "swagger" if "swagger" in _formats else "swagger"
+    POSTMAN = "postman" if "postman" in _formats else "postman"
+    HOPPSCOTCH = "hoppscotch" if "hoppscotch" in _formats else "hoppscotch"
 
 
 class ConversionOptions(BaseModel):

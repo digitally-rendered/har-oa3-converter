@@ -7,9 +7,13 @@ from typing import List, Optional
 
 from har_oa3_converter.converters.format_converter import (
     convert_file,
+    guess_format_from_file,
+)
+
+# Import directly from format_registry to get the correct implementation
+from har_oa3_converter.converters.format_registry import (
     get_available_formats,
     get_converter_for_formats,
-    guess_format_from_file,
 )
 
 
@@ -25,13 +29,32 @@ def parse_args(args: Optional[List[str]] = None) -> argparse.Namespace:
     available_formats = get_available_formats()
     format_list = ", ".join(available_formats)
 
+    # Create a parser for just the --list-formats flag
+    list_parser = argparse.ArgumentParser(add_help=False)
+    list_parser.add_argument(
+        "--list-formats", help="List available formats and exit", action="store_true"
+    )
+    
+    # Parse just to check if --list-formats is present
+    list_args, _ = list_parser.parse_known_args(args)
+    
+    # Create the main parser
     parser = argparse.ArgumentParser(
         description="Convert between API specification formats"
     )
-
-    parser.add_argument("input", help="Path to input file")
-
-    parser.add_argument("output", help="Path to output file")
+    
+    # Add the --list-formats argument
+    parser.add_argument(
+        "--list-formats", help="List available formats and exit", action="store_true"
+    )
+    
+    # Make input and output optional when --list-formats is used
+    if list_args.list_formats:
+        parser.add_argument("input", help="Path to input file", nargs="?", default=None)
+        parser.add_argument("output", help="Path to output file", nargs="?", default=None)
+    else:
+        parser.add_argument("input", help="Path to input file")
+        parser.add_argument("output", help="Path to output file")
 
     parser.add_argument(
         "--from-format",
@@ -72,9 +95,7 @@ def parse_args(args: Optional[List[str]] = None) -> argparse.Namespace:
 
     parser.add_argument("--base-path", help="Base path for API endpoints", default=None)
 
-    parser.add_argument(
-        "--list-formats", help="List available formats and exit", action="store_true"
-    )
+    # --list-formats is already added above
 
     parser.add_argument(
         "--no-validate",
@@ -98,6 +119,7 @@ def main(args: Optional[List[str]] = None) -> int:
 
     # Handle listing available formats
     if parsed_args.list_formats:
+        # Get available formats
         formats = get_available_formats()
         print("Available formats:")
         for fmt in formats:
@@ -112,6 +134,11 @@ def main(args: Optional[List[str]] = None) -> int:
                     print(f"  - {source_format} → {target_format}")
         return 0
 
+    # If we're not listing formats, input and output are required
+    if not parsed_args.input or not parsed_args.output:
+        print("Error: Both input and output files are required unless using --list-formats", file=sys.stderr)
+        return 1
+        
     input_path = parsed_args.input
     output_path = parsed_args.output
 

@@ -1,0 +1,229 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Hoppscotch Collection",
+  "description": "Schema for Hoppscotch API collection format",
+  "type": "object",
+  "required": ["v", "name", "folders", "requests"],
+  "properties": {
+    "v": {
+      "type": "integer",
+      "description": "Version of the collection format"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of the collection"
+    },
+    "folders": {
+      "type": "array",
+      "description": "Folders in the collection",
+      "items": {
+        "$ref": "#/definitions/folder"
+      }
+    },
+    "requests": {
+      "type": "array",
+      "description": "Requests in the collection",
+      "items": {
+        "$ref": "#/definitions/request"
+      }
+    },
+    "auth": {
+      "$ref": "#/definitions/auth"
+    },
+    "headers": {
+      "type": "array",
+      "description": "Headers for all requests in the collection",
+      "items": {
+        "$ref": "#/definitions/header"
+      }
+    }
+  },
+  "definitions": {
+    "folder": {
+      "type": "object",
+      "required": ["name", "folders", "requests"],
+      "properties": {
+        "v": {
+          "type": "integer",
+          "description": "Version of the folder format"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the folder"
+        },
+        "folders": {
+          "type": "array",
+          "description": "Sub-folders in the folder",
+          "items": {
+            "$ref": "#/definitions/folder"
+          }
+        },
+        "requests": {
+          "type": "array",
+          "description": "Requests in the folder",
+          "items": {
+            "$ref": "#/definitions/request"
+          }
+        },
+        "auth": {
+          "$ref": "#/definitions/auth"
+        },
+        "headers": {
+          "type": "array",
+          "description": "Headers for all requests in the folder",
+          "items": {
+            "$ref": "#/definitions/header"
+          }
+        }
+      }
+    },
+    "request": {
+      "type": "object",
+      "required": ["endpoint", "method"],
+      "properties": {
+        "v": {
+          "type": ["string", "integer"],
+          "description": "Version of the request format"
+        },
+        "endpoint": {
+          "type": "string",
+          "description": "URL of the request"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the request"
+        },
+        "method": {
+          "type": "string",
+          "description": "HTTP method of the request"
+        },
+        "params": {
+          "type": "array",
+          "description": "Query parameters of the request",
+          "items": {
+            "$ref": "#/definitions/param"
+          }
+        },
+        "headers": {
+          "type": "array",
+          "description": "Headers of the request",
+          "items": {
+            "$ref": "#/definitions/header"
+          }
+        },
+        "auth": {
+          "$ref": "#/definitions/auth"
+        },
+        "body": {
+          "$ref": "#/definitions/body"
+        },
+        "responses": {
+          "type": "object",
+          "description": "Saved responses for the request"
+        }
+      }
+    },
+    "param": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "description": "Name of the parameter"
+        },
+        "value": {
+          "type": "string",
+          "description": "Value of the parameter"
+        },
+        "active": {
+          "type": "boolean",
+          "description": "Whether the parameter is active"
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Whether the parameter is required"
+        }
+      }
+    },
+    "header": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "description": "Name of the header"
+        },
+        "value": {
+          "type": "string",
+          "description": "Value of the header"
+        },
+        "active": {
+          "type": "boolean",
+          "description": "Whether the header is active"
+        }
+      }
+    },
+    "auth": {
+      "type": "object",
+      "required": ["authType"],
+      "properties": {
+        "authType": {
+          "type": "string",
+          "description": "Type of authentication",
+          "enum": ["none", "basic", "bearer", "oauth-2", "api-key", "inherit"]
+        },
+        "authActive": {
+          "type": "boolean",
+          "description": "Whether authentication is active"
+        },
+        "token": {
+          "type": "string",
+          "description": "Bearer token"
+        },
+        "username": {
+          "type": "string",
+          "description": "Username for basic authentication"
+        },
+        "password": {
+          "type": "string",
+          "description": "Password for basic authentication"
+        },
+        "key": {
+          "type": "string",
+          "description": "API key name"
+        },
+        "value": {
+          "type": "string",
+          "description": "API key value"
+        },
+        "addTo": {
+          "type": "string",
+          "description": "Where to add the API key",
+          "enum": ["HEADERS", "QUERY_PARAMS"]
+        },
+        "grantTypeInfo": {
+          "type": "object",
+          "description": "OAuth 2.0 grant type information"
+        }
+      }
+    },
+    "body": {
+      "type": "object",
+      "properties": {
+        "contentType": {
+          "type": "string",
+          "description": "Content type of the request body"
+        },
+        "body": {
+          "description": "Content of the request body",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
