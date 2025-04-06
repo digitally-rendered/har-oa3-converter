@@ -8,10 +8,10 @@ from pathlib import Path
 import pytest
 
 from har_oa3_converter.converters.new_schema_validator import (
-    validate_format,
+    SUPPORTED_FORMATS,
     detect_format,
     validate_file,
-    SUPPORTED_FORMATS,
+    validate_format,
 )
 
 

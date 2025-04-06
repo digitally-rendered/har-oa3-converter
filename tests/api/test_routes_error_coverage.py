@@ -3,18 +3,18 @@
 import json
 import os
 import tempfile
-from unittest import mock
 from pathlib import Path
+from unittest import mock
 
 import pytest
-from fastapi import UploadFile, HTTPException
+from fastapi import HTTPException, UploadFile
 from fastapi.testclient import TestClient
 
-from har_oa3_converter.api.models import ConversionOptions, ConversionFormat
+from har_oa3_converter.api.models import ConversionFormat, ConversionOptions
 from har_oa3_converter.api.routes import (
-    router,
-    get_conversion_options,
     convert_document,
+    get_conversion_options,
+    router,
 )
 from har_oa3_converter.api.server import app
 

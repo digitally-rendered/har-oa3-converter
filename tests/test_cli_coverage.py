@@ -1,9 +1,9 @@
 """Direct tests for the CLI module to improve coverage."""
 
+import importlib.util
 import json
 import os
 import sys
-import importlib.util
 import tempfile
 from pathlib import Path
 

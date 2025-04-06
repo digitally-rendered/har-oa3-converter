@@ -1,16 +1,16 @@
 """Fixed Schemathesis tests for API schema validation."""
 
 import json
-import tempfile
 import os
+import tempfile
 
 import pytest
 import schemathesis
 from fastapi.testclient import TestClient
 
-from tests.api.conftest import execute_schemathesis_case
-from har_oa3_converter.api.server import app, custom_openapi
 from har_oa3_converter.api.models import ConversionFormat
+from har_oa3_converter.api.server import app, custom_openapi
+from tests.api.conftest import execute_schemathesis_case
 
 # Import our manually crafted schema that's compatible with Schemathesis
 from tests.api.schemathesis_schema import SCHEMA

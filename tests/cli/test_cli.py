@@ -9,15 +9,12 @@ from unittest import mock
 import pytest
 import yaml
 
-from har_oa3_converter.cli import main as cli_main, parse_args as cli_parse_args
-from har_oa3_converter.cli.har_to_oas_cli import (
-    main as har_cli_main,
-    parse_args as har_cli_parse_args,
-)
-from har_oa3_converter.cli.format_cli import (
-    main as format_cli_main,
-    parse_args as format_cli_parse_args,
-)
+from har_oa3_converter.cli import main as cli_main
+from har_oa3_converter.cli import parse_args as cli_parse_args
+from har_oa3_converter.cli.format_cli import main as format_cli_main
+from har_oa3_converter.cli.format_cli import parse_args as format_cli_parse_args
+from har_oa3_converter.cli.har_to_oas_cli import main as har_cli_main
+from har_oa3_converter.cli.har_to_oas_cli import parse_args as har_cli_parse_args
 
 
 @pytest.fixture

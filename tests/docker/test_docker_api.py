@@ -13,9 +13,9 @@ import requests
 import yaml
 
 from tests.docker.docker_utils import (
+    cleanup_container,
     docker_available,
     generate_random_container_name,
-    cleanup_container,
 )
 from tests.docker.test_docker_functionality import docker_running
 
@@ -86,8 +86,8 @@ class DockerAPIContainer:
 
     def _find_free_port(self) -> int:
         """Find a free port to use for the Docker container."""
-        import socket
         import random
+        import socket
 
         # When running in parallel with pytest-xdist, add worker id to port base
         # to reduce chance of conflicts between workers

@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
 import yaml
-from jsonschema import validate, ValidationError
+from jsonschema import ValidationError, validate
 
 
 class FileHandler:

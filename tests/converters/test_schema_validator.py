@@ -8,19 +8,19 @@ from pathlib import Path
 import pytest
 
 from har_oa3_converter.converters.schema_validator import (
-    validate_format,
+    SUPPORTED_FORMATS,
     detect_format,
     validate_file,
+    validate_format,
     validate_schema_object,
-    SUPPORTED_FORMATS,
 )
 
 # Import centralized schemas
 from har_oa3_converter.schemas import (
     HAR_SCHEMA,
     OPENAPI3_SCHEMA,
-    SWAGGER_SCHEMA,
     POSTMAN_SCHEMA,
+    SWAGGER_SCHEMA,
 )
 
 

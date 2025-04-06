@@ -10,8 +10,8 @@ import yaml
 
 from har_oa3_converter.converters.format_converter import (
     HarToOpenApi3Converter,
-    OpenApi3ToSwaggerConverter,
     OpenApi3ToOpenApi3Converter,
+    OpenApi3ToSwaggerConverter,
     convert_file,
 )
 from har_oa3_converter.converters.har_to_oas3 import HarToOas3Converter

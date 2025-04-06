@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from har_oa3_converter.cli import parse_args, main
+from har_oa3_converter.cli import main, parse_args
 
 
 @pytest.fixture

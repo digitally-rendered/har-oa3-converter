@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Optional, Tuple, Type
 import yaml
 
 from har_oa3_converter.converters.har_to_oas3 import HarToOas3Converter
-from har_oa3_converter.converters.schema_validator import validate_file, detect_format
+from har_oa3_converter.converters.schema_validator import detect_format, validate_file
 from har_oa3_converter.utils.file_handler import FileHandler
 
 

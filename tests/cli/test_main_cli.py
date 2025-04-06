@@ -11,7 +11,8 @@ import yaml
 
 # Import the entire module to make sure coverage is tracked properly
 import har_oa3_converter.cli
-from har_oa3_converter.cli import main as cli_main, parse_args as cli_parse_args
+from har_oa3_converter.cli import main as cli_main
+from har_oa3_converter.cli import parse_args as cli_parse_args
 
 
 @pytest.fixture

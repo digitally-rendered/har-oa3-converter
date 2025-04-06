@@ -2,16 +2,16 @@
 
 import json
 import tempfile
-import yaml
 from typing import Any, Dict, List, Optional
 
+import yaml
 from fastapi import (
     APIRouter,
     Depends,
     File,
     Form,
-    HTTPException,
     Header,
+    HTTPException,
     Path,
     Query,
     Request,
@@ -19,8 +19,6 @@ from fastapi import (
     UploadFile,
 )
 from fastapi.responses import StreamingResponse
-
-from har_oa3_converter.utils.file_handler import FileHandler
 
 from har_oa3_converter.api.models import (
     ConversionFormat,
@@ -35,6 +33,7 @@ from har_oa3_converter.converters.format_registry import (
     get_available_formats,
     get_converter_for_formats,
 )
+from har_oa3_converter.utils.file_handler import FileHandler
 
 router = APIRouter(tags=["conversion"])
 

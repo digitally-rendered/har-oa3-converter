@@ -5,19 +5,19 @@ import os
 import tempfile
 from typing import Dict, List, Optional
 
-import pytest
-import yaml
 import jsonschema
+import pytest
+import schemathesis
+import yaml
 from fastapi.testclient import TestClient
 
-import schemathesis
-from har_oa3_converter.api.server import app, custom_openapi
 from har_oa3_converter.api.models import (
     ConversionFormat,
     ConversionOptions,
     FormatInfo,
     FormatResponse,
 )
+from har_oa3_converter.api.server import app, custom_openapi
 
 
 @pytest.fixture(scope="module")

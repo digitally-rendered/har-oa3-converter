@@ -9,9 +9,8 @@ import pytest
 import yaml
 from fastapi.testclient import TestClient
 
-from har_oa3_converter.api.server import app
 from har_oa3_converter.api.models import ConversionFormat
-
+from har_oa3_converter.api.server import app
 
 # We can't use Schemathesis directly with the schema since it doesn't support OpenAPI 3.1.0 yet
 # Instead, we'll use FastAPI's TestClient and implement our own schema validation tests

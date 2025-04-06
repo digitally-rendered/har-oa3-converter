@@ -1,15 +1,15 @@
 """Tests for error handling in API routes, focusing on JSON decoding errors."""
 
 import json
-import tempfile
 import os
+import tempfile
 from unittest import mock
 
 import pytest
 from fastapi.testclient import TestClient
 
-from har_oa3_converter.api.server import app
 from har_oa3_converter.api.models import ConversionFormat
+from har_oa3_converter.api.server import app
 
 
 def test_api_json_decode_error():

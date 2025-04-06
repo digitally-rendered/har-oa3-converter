@@ -5,14 +5,14 @@ import json
 import os
 import tempfile
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from har_oa3_converter.api.routes import router, convert_document
 from har_oa3_converter.api.models import ConversionResponse
+from har_oa3_converter.api.routes import convert_document, router
 
 # Create a test client for FastAPI with the routes mounted correctly
 app = FastAPI()

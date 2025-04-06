@@ -153,7 +153,7 @@ class HarToOas3Converter:
 
             # Parse URL with special character handling
             try:
-                from urllib.parse import urlparse, unquote
+                from urllib.parse import unquote, urlparse
 
                 parsed_url = urlparse(url)
                 path = unquote(parsed_url.path)  # Handle percent-encoded characters

@@ -7,8 +7,8 @@ from typing import Dict, List, Optional, Union
 
 import pytest
 import yaml
-from fastapi.testclient import TestClient
 from fastapi import status
+from fastapi.testclient import TestClient
 
 from har_oa3_converter.api.models import (
     ConversionFormat,

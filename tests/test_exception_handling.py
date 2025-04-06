@@ -3,14 +3,14 @@
 import json
 import os
 import tempfile
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 from fastapi.testclient import TestClient
 from starlette.status import HTTP_408_REQUEST_TIMEOUT, HTTP_413_REQUEST_ENTITY_TOO_LARGE
 
-from har_oa3_converter.api.server import app
 from har_oa3_converter.api.models import ConversionFormat
+from har_oa3_converter.api.server import app
 
 
 @pytest.fixture

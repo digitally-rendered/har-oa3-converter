@@ -1,7 +1,7 @@
 """Tests for error handling in the routes.py file."""
 
 import tempfile
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 from fastapi import HTTPException

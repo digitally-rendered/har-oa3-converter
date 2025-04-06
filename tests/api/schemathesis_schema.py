@@ -4,7 +4,7 @@ This module creates a compatible schema specifically formatted for Schemathesis.
 """
 
 import copy
-from typing import Dict, Any
+from typing import Any, Dict
 
 # Base schema compatible with Schemathesis
 SCHEMA = {

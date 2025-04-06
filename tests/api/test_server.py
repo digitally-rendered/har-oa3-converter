@@ -3,7 +3,7 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from har_oa3_converter.api.server import app, parse_args, custom_openapi, main
+from har_oa3_converter.api.server import app, custom_openapi, main, parse_args
 
 
 @pytest.fixture

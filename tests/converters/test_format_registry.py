@@ -3,16 +3,16 @@
 import json
 import os
 import tempfile
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 from har_oa3_converter.converters.format_registry import (
+    CONVERTERS,
+    convert_file,
     get_available_formats,
     get_converter_for_formats,
     guess_format_from_file,
-    convert_file,
-    CONVERTERS,
 )
 from har_oa3_converter.converters.formats.base import FormatConverter
 from har_oa3_converter.converters.formats.har_to_openapi3 import HarToOpenApi3Converter

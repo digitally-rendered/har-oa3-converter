@@ -1,10 +1,11 @@
 """Script to analyze coverage gaps and run targeted tests."""
 
-import os
-import sys
 import json
-from pathlib import Path
+import os
 import subprocess
+import sys
+from pathlib import Path
+
 import coverage
 
 

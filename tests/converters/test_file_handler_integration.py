@@ -8,8 +8,8 @@ from pathlib import Path
 import pytest
 
 from har_oa3_converter.converters.file_handler_integration import (
-    register_schemas,
     load_file,
+    register_schemas,
     save_file,
     validate_with_schema,
 )

@@ -3,21 +3,21 @@
 import json
 import os
 import tempfile
-from unittest import mock
 from pathlib import Path
+from unittest import mock
 
 import pytest
 import yaml
 
 from har_oa3_converter.converters.format_converter import (
+    CONVERTERS,
+    FORMAT_EXTENSIONS,
     FormatConverter,
+    HarToOpenApi3Converter,
+    OpenApi3ToOpenApi3Converter,
     OpenApi3ToSwaggerConverter,
     PostmanToHarConverter,
     PostmanToOpenApi3Converter,
-    HarToOpenApi3Converter,
-    OpenApi3ToOpenApi3Converter,
-    CONVERTERS,
-    FORMAT_EXTENSIONS,
     convert_file,
     get_available_formats,
     get_converter_for_formats,

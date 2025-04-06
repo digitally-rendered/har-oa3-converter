@@ -1,16 +1,16 @@
 """Tests for the file handler module."""
 
+import json
 import os
 import tempfile
-import json
-import yaml
 from pathlib import Path
 
 import pytest
+import yaml
 from jsonschema import ValidationError
 
+from har_oa3_converter.schemas import HAR_SCHEMA, get_schema
 from har_oa3_converter.utils.file_handler import FileHandler
-from har_oa3_converter.schemas import get_schema, HAR_SCHEMA
 
 
 @pytest.fixture

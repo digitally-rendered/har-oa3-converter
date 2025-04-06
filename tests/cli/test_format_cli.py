@@ -124,7 +124,8 @@ class TestFormatCli:
     def test_main_list_formats(self, monkeypatch):
         """Test main function with --list-formats option."""
         # Patch argparse.ArgumentParser.error and sys.exit
-        import argparse, sys
+        import argparse
+        import sys
 
         original_error = argparse.ArgumentParser.error
         original_exit = sys.exit

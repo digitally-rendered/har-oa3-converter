@@ -11,6 +11,7 @@ import pytest
 import yaml
 from fastapi.testclient import TestClient
 
+from har_oa3_converter.api.models import ConversionOptions, ConversionResponse
 from har_oa3_converter.converter import HarToOas3Converter
 from har_oa3_converter.converters.format_converter import HarToOpenApi3Converter
 from har_oa3_converter.converters.formats.hoppscotch_to_openapi3 import (
@@ -21,14 +22,13 @@ from har_oa3_converter.format_converter import (
     get_available_formats,
     get_converter_for_formats,
 )
-from har_oa3_converter.utils.file_handler import FileHandler
-from har_oa3_converter.api.models import ConversionResponse, ConversionOptions
 from har_oa3_converter.schemas.json_schemas import (
     HAR_SCHEMA,
     OPENAPI3_SCHEMA,
     SWAGGER_SCHEMA,
     get_schema,
 )
+from har_oa3_converter.utils.file_handler import FileHandler
 
 
 # Create sample data for tests
@@ -614,8 +614,8 @@ class TestReadmeApiExamples:
         # we can verify the endpoint definitions exist without running them
 
         # Verify that the app and conversion_router exist and are imported correctly
-        from har_oa3_converter.api.server import app
         from har_oa3_converter.api.routes import router as conversion_router
+        from har_oa3_converter.api.server import app
 
         # Verify that the app includes the router
         app_routes = [route for route in app.routes]

@@ -1,13 +1,13 @@
 """Integration module for FileHandler with schemas and converters."""
 
-from typing import Dict, Any
+from typing import Any, Dict
 
 # Import schemas
 from har_oa3_converter.converters.schema_validator import (
     HAR_SCHEMA,
     OPENAPI3_SCHEMA,
-    SWAGGER_SCHEMA,
     POSTMAN_SCHEMA,
+    SWAGGER_SCHEMA,
 )
 
 # Import FileHandler

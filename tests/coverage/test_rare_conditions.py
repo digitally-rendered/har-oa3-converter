@@ -1,14 +1,15 @@
 """Tests simulating rare conditions using mocking to improve coverage."""
 
-import os
 import json
+import os
 import tempfile
+from unittest.mock import mock_open, patch
+
 import pytest
-from unittest.mock import patch, mock_open
 from fastapi.testclient import TestClient
 
-from har_oa3_converter.api.server import app
 from har_oa3_converter.api.models import ConversionFormat
+from har_oa3_converter.api.server import app
 from har_oa3_converter.utils.file_handler import FileHandler
 
 
@@ -122,6 +123,7 @@ def test_environment_variables():
         os.environ["LOG_LEVEL"] = "DEBUG"
         # Import or reload module that uses LOG_LEVEL
         import importlib
+
         from har_oa3_converter.api import server
 
         importlib.reload(server)

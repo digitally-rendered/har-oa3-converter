@@ -2,8 +2,8 @@
 
 import random
 import string
-import time
 import subprocess
+import time
 from typing import Optional
 
 # Lists for generating random container names

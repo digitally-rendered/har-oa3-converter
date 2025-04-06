@@ -1,7 +1,8 @@
 """Tests for the base FormatConverter class."""
 
+from typing import Any, Dict, Optional
+
 import pytest
-from typing import Dict, Any, Optional
 
 from har_oa3_converter.converters.formats.base import FormatConverter
 

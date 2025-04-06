@@ -9,15 +9,15 @@ import pytest
 import requests
 import yaml
 
-from tests.docker.test_docker_functionality import (
-    docker_available,
-    docker_running,
-    alert_when_docker_not_available,
-)
 from tests.docker.test_docker_api import (
     DockerAPIContainer,
-    wait_for_server,
     api_container,
+    wait_for_server,
+)
+from tests.docker.test_docker_functionality import (
+    alert_when_docker_not_available,
+    docker_available,
+    docker_running,
 )
 
 

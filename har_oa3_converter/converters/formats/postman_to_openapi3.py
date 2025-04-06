@@ -5,8 +5,8 @@ import os
 from typing import Any, Dict, Optional
 
 from har_oa3_converter.converters.formats.base import FormatConverter
-from har_oa3_converter.converters.formats.postman_to_har import PostmanToHarConverter
 from har_oa3_converter.converters.formats.har_to_openapi3 import HarToOpenApi3Converter
+from har_oa3_converter.converters.formats.postman_to_har import PostmanToHarConverter
 
 
 class PostmanToOpenApi3Converter(FormatConverter):

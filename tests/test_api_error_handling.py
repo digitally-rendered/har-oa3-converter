@@ -1,15 +1,15 @@
 """Tests for error handling in the API routes."""
 
 import json
-import tempfile
 import os
+import tempfile
 from unittest.mock import patch
 
 import pytest
 from fastapi.testclient import TestClient
 
-from har_oa3_converter.api.server import app
 from har_oa3_converter.api.models import ConversionFormat
+from har_oa3_converter.api.server import app
 
 
 @pytest.fixture

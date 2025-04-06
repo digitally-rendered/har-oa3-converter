@@ -1,18 +1,18 @@
 """Schema validation for different API specification formats."""
 
 import os
-from typing import Dict, Any, Tuple, Optional
+from typing import Any, Dict, Optional, Tuple
 
-from jsonschema import validate, ValidationError
+from jsonschema import ValidationError, validate
 
-from har_oa3_converter.utils.file_handler import FileHandler
 from har_oa3_converter.schemas import (
     HAR_SCHEMA,
     OPENAPI3_SCHEMA,
-    SWAGGER_SCHEMA,
     POSTMAN_SCHEMA,
+    SWAGGER_SCHEMA,
     get_schema,
 )
+from har_oa3_converter.utils.file_handler import FileHandler
 
 # Define the formats we support for validation
 SUPPORTED_FORMATS = ["har", "openapi3", "swagger", "postman"]

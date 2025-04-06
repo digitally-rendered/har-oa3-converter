@@ -3,15 +3,16 @@
 import json
 import os
 import tempfile
+
 import pytest
 
 from har_oa3_converter.api.models import ConversionFormat, FormatInfo, FormatResponse
 from har_oa3_converter.converters.format_converter import FormatConverter
 from har_oa3_converter.converters.har_to_oas3 import HarToOas3Converter
 from har_oa3_converter.converters.schema_validator import (
-    validate_format,
-    validate_file,
     detect_format,
+    validate_file,
+    validate_format,
 )
 from har_oa3_converter.schemas.json_schemas import (
     HAR_SCHEMA,

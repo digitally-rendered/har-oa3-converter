@@ -5,12 +5,12 @@ import os
 import tempfile
 from pathlib import Path
 
+import jsonschema
 import pytest
 from fastapi.testclient import TestClient
-import jsonschema
 
-from har_oa3_converter.api.server import app, custom_openapi
 from har_oa3_converter.api.models import ConversionFormat
+from har_oa3_converter.api.server import app, custom_openapi
 
 # Make sure we use the custom OpenAPI schema with version 3.0.3
 app.openapi = custom_openapi

@@ -12,13 +12,13 @@ from fastapi import status
 from fastapi.testclient import TestClient
 from pydantic import BaseModel
 
-from har_oa3_converter.api.server import app
 from har_oa3_converter.api.models import (
     ConversionFormat,
     ConversionOptions,
     FormatInfo,
     FormatResponse,
 )
+from har_oa3_converter.api.server import app
 
 
 @pytest.fixture

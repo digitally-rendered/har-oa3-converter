@@ -6,7 +6,7 @@ API endpoints will use these schema documents to interpret parameter objects.
 import json
 import os
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 # HAR Schema (HTTP Archive format)
 HAR_SCHEMA = {

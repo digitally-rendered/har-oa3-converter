@@ -1,12 +1,13 @@
 """Tests to trigger error conditions and cover error handling paths."""
 
 import json
+
 import pytest
 from fastapi.testclient import TestClient
+from jsonschema import ValidationError
 
 from har_oa3_converter.api.server import app
 from har_oa3_converter.converters.format_converter import FormatConverter
-from jsonschema import ValidationError
 
 
 @pytest.fixture

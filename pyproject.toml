@@ -66,6 +66,11 @@ extend-exclude = '''
 [tool.isort]
 profile = "black"
 multi_line_output = 3
+line_length = 88
+include_trailing_comma = true
+use_parentheses = true
+ensure_newline_before_comments = true
+force_grid_wrap = 0
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

@@ -9,8 +9,8 @@ import pytest
 import yaml
 
 from har_oa3_converter.converters.format_converter import (
-    FORMAT_EXTENSIONS,
     CONVERTERS,
+    FORMAT_EXTENSIONS,
     FormatConverter,
     HarToOpenApi3Converter,
     OpenApi3ToSwaggerConverter,

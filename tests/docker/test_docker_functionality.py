@@ -2,18 +2,18 @@
 
 import json
 import os
+import shutil
 import subprocess
 import tempfile
-import shutil
 from pathlib import Path
 
 import pytest
 import yaml
 
 from tests.docker.docker_utils import (
+    cleanup_container,
     docker_available,
     generate_random_container_name,
-    cleanup_container,
 )
 
 

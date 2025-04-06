@@ -11,7 +11,7 @@ import yaml
 
 # Direct import from cli.py to ensure we're testing the right module
 import har_oa3_converter.cli
-from har_oa3_converter.cli import parse_args, main
+from har_oa3_converter.cli import main, parse_args
 
 
 @pytest.fixture

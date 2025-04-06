@@ -21,9 +21,8 @@ from har_oa3_converter.converters.formats.postman_to_har import PostmanToHarConv
 from har_oa3_converter.converters.formats.postman_to_openapi3 import (
     PostmanToOpenApi3Converter,
 )
-from har_oa3_converter.converters.schema_validator import validate_file, detect_format
+from har_oa3_converter.converters.schema_validator import detect_format, validate_file
 from har_oa3_converter.utils.file_handler import FileHandler
-
 
 # Register all available converters
 CONVERTERS = [

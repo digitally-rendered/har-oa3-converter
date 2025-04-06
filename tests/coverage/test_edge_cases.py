@@ -1,11 +1,12 @@
 """Tests for edge cases and boundary conditions to improve coverage."""
 
 import json
+
 import pytest
 from fastapi.testclient import TestClient
 
-from har_oa3_converter.api.server import app
 from har_oa3_converter.api.models import ConversionFormat
+from har_oa3_converter.api.server import app
 from har_oa3_converter.converters.format_converter import FormatConverter
 from har_oa3_converter.converters.har_to_oas3 import HarToOas3Converter
 

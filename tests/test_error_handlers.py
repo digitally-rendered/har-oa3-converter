@@ -9,9 +9,9 @@ import pytest
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
-from har_oa3_converter.api.server import app
 from har_oa3_converter.api.models import ConversionFormat
 from har_oa3_converter.api.routes import convert_document
+from har_oa3_converter.api.server import app
 
 
 @pytest.fixture
