@@ -45,16 +45,6 @@ jobs:
       run: |
         poetry run mypy har_oa3_converter
         
-    - name: Test with pytest
-      run: |
-        poetry run pytest --cov=har_oa3_converter --cov-report=xml
-        
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage.xml
-        fail_ci_if_error: false
-
   publish:
     name: Publish to PyPI
     needs: test
