@@ -67,17 +67,19 @@ jobs:
 
     - name: Test Summary
       if: always()
-      env:
-        TEST_RESULT: ${{ steps.tests.outputs.test_result }}
       run: |
         echo "## Python ${{ matrix.python-version }} Test Results" >> $GITHUB_STEP_SUMMARY
+        
+        # Get test result with a default value if not set
+        TEST_RESULT="${{ steps.tests.outputs.test_result || 'failure' }}"
         
         # Print the raw output for debugging
         echo "Raw test_result output: '$TEST_RESULT'"
         
-        # Set a default if the environment variable is empty or not set correctly
-        if [ "$TEST_RESULT" != "success" ] && [ "$TEST_RESULT" != "failure" ]; then
-          echo "Test result is invalid: '$TEST_RESULT', setting default to failure"
+        # Normalize the test result to ensure it's either 'success' or 'failure'
+        if [ "$TEST_RESULT" = "success" ]; then
+          TEST_RESULT="success"
+        else
           TEST_RESULT="failure"
         fi
         
@@ -91,13 +93,23 @@ jobs:
         fi
         
         # Add coverage summary
+        echo "### Coverage Report" >> $GITHUB_STEP_SUMMARY
         if [ -f coverage.xml ]; then
-          echo "### Coverage Report" >> $GITHUB_STEP_SUMMARY
-          COVERAGE=$(grep -o 'line-rate="[0-9.]+"' coverage.xml | head -1 | grep -o '[0-9.]+' || echo "0")
-          COVERAGE_PCT=$(echo "$COVERAGE * 100" | bc -l | xargs printf "%.2f" || echo "0.00")
-          echo "- Line Coverage: $COVERAGE_PCT%" >> $GITHUB_STEP_SUMMARY
+          # Check if the file exists and has content
+          if [ -s coverage.xml ]; then
+            # Try to extract coverage data with better error handling
+            COVERAGE=$(grep -o 'line-rate="[0-9.]+"' coverage.xml 2>/dev/null | head -1 | grep -o '[0-9.]+' 2>/dev/null || echo "0")
+            # Verify we got a valid number
+            if [[ $COVERAGE =~ ^[0-9]+\.?[0-9]*$ ]]; then
+              COVERAGE_PCT=$(echo "$COVERAGE * 100" | bc -l 2>/dev/null | xargs printf "%.2f" 2>/dev/null || echo "0.00")
+              echo "- Line Coverage: $COVERAGE_PCT%" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "- Unable to parse coverage data (invalid format)" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "- Coverage file exists but is empty" >> $GITHUB_STEP_SUMMARY
+          fi
         else
-          echo "### Coverage Report" >> $GITHUB_STEP_SUMMARY
           echo "- Coverage report not generated" >> $GITHUB_STEP_SUMMARY
         fi
         
