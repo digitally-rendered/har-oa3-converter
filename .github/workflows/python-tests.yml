@@ -55,26 +55,37 @@ jobs:
         
         # Run tests with comprehensive coverage reporting
         if poetry run pytest --cov=har_oa3_converter --cov-report=xml --cov-report=html --cov-report=term --html=pytest-report.html --json-report --json-report-file=pytest-report.json --cov-branch -v; then
+          # Make the success output very explicit
+          echo "::set-output name=test_result::success"
           echo "test_result=success" >> $GITHUB_OUTPUT
+          echo "Tests passed successfully"
+        else
+          # Make the failure output very explicit
+          echo "::set-output name=test_result::failure"
+          echo "test_result=failure" >> $GITHUB_OUTPUT
+          echo "Tests failed"
         fi
       continue-on-error: true
 
     - name: Test Summary
       if: always()
+      env:
+        TEST_RESULT: ${{ steps.tests.outputs.test_result }}
       run: |
         echo "## Python ${{ matrix.python-version }} Test Results" >> $GITHUB_STEP_SUMMARY
         
-        # Explicitly get the test result from the tests step
-        TEST_RESULT="${{ steps.tests.outputs.test_result }}"
+        # Print the raw output for debugging
+        echo "Raw test_result output: '$TEST_RESULT'"
         
-        # Check if the result is empty and set a default
+        # Set a default if the environment variable is empty
         if [ -z "$TEST_RESULT" ]; then
+          echo "Test result is empty, setting default to failure"
           TEST_RESULT="failure"
         fi
         
         echo "Debug: Test result is '$TEST_RESULT'" >> $GITHUB_STEP_SUMMARY
         
-        if [ "$TEST_RESULT" == "success" ]; then
+        if [ "$TEST_RESULT" = "success" ]; then
           echo "✅ All tests passed" >> $GITHUB_STEP_SUMMARY
         else
           echo "❌ Some tests failed" >> $GITHUB_STEP_SUMMARY
