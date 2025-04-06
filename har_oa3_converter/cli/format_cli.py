@@ -34,24 +34,26 @@ def parse_args(args: Optional[List[str]] = None) -> argparse.Namespace:
     list_parser.add_argument(
         "--list-formats", help="List available formats and exit", action="store_true"
     )
-    
+
     # Parse just to check if --list-formats is present
     list_args, _ = list_parser.parse_known_args(args)
-    
+
     # Create the main parser
     parser = argparse.ArgumentParser(
         description="Convert between API specification formats"
     )
-    
+
     # Add the --list-formats argument
     parser.add_argument(
         "--list-formats", help="List available formats and exit", action="store_true"
     )
-    
+
     # Make input and output optional when --list-formats is used
     if list_args.list_formats:
         parser.add_argument("input", help="Path to input file", nargs="?", default=None)
-        parser.add_argument("output", help="Path to output file", nargs="?", default=None)
+        parser.add_argument(
+            "output", help="Path to output file", nargs="?", default=None
+        )
     else:
         parser.add_argument("input", help="Path to input file")
         parser.add_argument("output", help="Path to output file")
@@ -136,9 +138,12 @@ def main(args: Optional[List[str]] = None) -> int:
 
     # If we're not listing formats, input and output are required
     if not parsed_args.input or not parsed_args.output:
-        print("Error: Both input and output files are required unless using --list-formats", file=sys.stderr)
+        print(
+            "Error: Both input and output files are required unless using --list-formats",
+            file=sys.stderr,
+        )
         return 1
-        
+
     input_path = parsed_args.input
     output_path = parsed_args.output
 

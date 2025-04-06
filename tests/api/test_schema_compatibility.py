@@ -150,7 +150,7 @@ def test_convert_endpoint_with_valid_input(client, sample_har_file, target_forma
         try:
             # Try to parse as JSON first
             response_data = response.json()
-            
+
             # If it's the converted document directly (more likely)
             if "openapi" in response_data or "swagger" in response_data:
                 # Verify it's a valid OpenAPI/Swagger document
@@ -171,7 +171,10 @@ def test_convert_endpoint_with_valid_input(client, sample_har_file, target_forma
             # Just check that we got a non-empty response
             assert len(response.content) > 0
             # For YAML responses, try to parse it
-            if response.headers.get("content-type", "") in ["application/yaml", "text/yaml"]:
+            if response.headers.get("content-type", "") in [
+                "application/yaml",
+                "text/yaml",
+            ]:
                 try:
                     yaml_data = yaml.safe_load(response.content)
                     assert yaml_data is not None
@@ -239,18 +242,18 @@ def test_convert_endpoint_accept_header(
 
         # Validate response
         assert response.status_code == 200
-        
+
         # Check content-type header
         content_type = response.headers.get("content-type", "").split(";")[0].strip()
         assert expected_content_type.lower() in content_type.lower()
-        
+
         # Ensure we got a non-empty response
         assert len(response.content) > 0
-        
+
         try:
             # Try to parse as JSON
             response_data = response.json()
-            
+
             # Handle both response types
             if "openapi" in response_data or "swagger" in response_data:
                 # Direct document response
@@ -292,14 +295,14 @@ def test_conversion_options(client, sample_har_file):
 
         # Validate response
         assert response.status_code == 200
-        
+
         # Ensure we got a non-empty response
         assert len(response.content) > 0
-        
+
         try:
             # Try to parse as JSON
             response_data = response.json()
-            
+
             # Verify it's a valid OpenAPI document
             assert "openapi" in response_data
             assert "info" in response_data
@@ -360,14 +363,14 @@ def test_source_format_override(client, sample_har_file):
 
         # Validate successful conversion with source format override
         assert response.status_code == 200
-        
+
         # Ensure we got a non-empty response
         assert len(response.content) > 0
-        
+
         try:
             # Try to parse as JSON
             response_data = response.json()
-            
+
             # Verify it's a valid OpenAPI document
             if "openapi" in response_data:
                 assert response_data["openapi"].startswith("3.")

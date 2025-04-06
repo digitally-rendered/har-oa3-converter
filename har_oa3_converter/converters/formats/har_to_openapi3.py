@@ -5,7 +5,9 @@ import os
 from typing import Any, Dict, Optional
 
 from har_oa3_converter.converters.formats.base import FormatConverter
-from har_oa3_converter.converters.har_to_oas3 import HarToOas3Converter as OriginalConverter
+from har_oa3_converter.converters.har_to_oas3 import (
+    HarToOas3Converter as OriginalConverter,
+)
 from har_oa3_converter.utils.file_handler import FileHandler
 
 
@@ -53,17 +55,19 @@ class HarToOpenApi3Converter(FormatConverter):
         # Extract options
         title = options.get("title", "API Documentation")
         version = options.get("version", "1.0.0")
-        description = options.get("description", "API Documentation generated from HAR file")
+        description = options.get(
+            "description", "API Documentation generated from HAR file"
+        )
         servers = options.get("servers", [])
 
         # Set up converter options
         converter.info = {
             "title": title,
             "version": version,
-            "description": description
+            "description": description,
         }
         converter.servers = servers
-        
+
         # Convert HAR to OpenAPI 3 using the convert method
         openapi3 = converter.convert_from_string(json.dumps(har_data))
 

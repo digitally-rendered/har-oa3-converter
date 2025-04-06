@@ -35,11 +35,11 @@ def test_empty_file_upload():
         assert any(
             error_text in error_detail
             for error_text in [
-                "empty", 
-                "invalid", 
-                "failed", 
-                "validation", 
-                "source file"
+                "empty",
+                "invalid",
+                "failed",
+                "validation",
+                "source file",
             ]
         )
     finally:

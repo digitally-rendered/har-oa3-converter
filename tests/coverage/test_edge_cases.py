@@ -23,16 +23,35 @@ def edge_case_inputs():
         "empty_object": "{}",
         "minimal_har": json.dumps({"log": {"entries": []}}),
         "malformed_har": json.dumps({"log": {"entries": [{"invalid": True}]}}),
-        "special_chars": json.dumps({"log": {"entries": [{"request": {"url": "https://example.com/!@#$%^&*"}}]}}),
-        "duplicate_urls": json.dumps({
-            "log": {
-                "entries": [
-                    {"request": {"method": "GET", "url": "https://example.com/api/users"}},
-                    {"request": {"method": "POST", "url": "https://example.com/api/users"}},
-                    {"request": {"method": "GET", "url": "https://example.com/api/users"}}
-                ]
+        "special_chars": json.dumps(
+            {"log": {"entries": [{"request": {"url": "https://example.com/!@#$%^&*"}}]}}
+        ),
+        "duplicate_urls": json.dumps(
+            {
+                "log": {
+                    "entries": [
+                        {
+                            "request": {
+                                "method": "GET",
+                                "url": "https://example.com/api/users",
+                            }
+                        },
+                        {
+                            "request": {
+                                "method": "POST",
+                                "url": "https://example.com/api/users",
+                            }
+                        },
+                        {
+                            "request": {
+                                "method": "GET",
+                                "url": "https://example.com/api/users",
+                            }
+                        },
+                    ]
+                }
             }
-        }),
+        ),
     }
 
 
@@ -41,11 +60,13 @@ def test_minimal_input(client, edge_case_inputs):
     # Test with minimal HAR file
     response = client.post(
         f"/api/convert/{ConversionFormat.OPENAPI3.value}",
-        files={"file": ("test.har", edge_case_inputs["minimal_har"], "application/json")},
+        files={
+            "file": ("test.har", edge_case_inputs["minimal_har"], "application/json")
+        },
     )
     # The response should be successful (200) or a well-formed error (400)
     assert response.status_code in [200, 400]
-    
+
     if response.status_code == 200:
         data = response.json()
         assert "openapi" in data
@@ -63,7 +84,9 @@ def test_malformed_input(client, edge_case_inputs):
     # Test with malformed HAR file
     response = client.post(
         f"/api/convert/{ConversionFormat.OPENAPI3.value}",
-        files={"file": ("test.har", edge_case_inputs["malformed_har"], "application/json")},
+        files={
+            "file": ("test.har", edge_case_inputs["malformed_har"], "application/json")
+        },
     )
     # Should return an error
     assert response.status_code != 200
@@ -74,11 +97,13 @@ def test_special_characters(client, edge_case_inputs):
     # Test with special characters in URL
     response = client.post(
         f"/api/convert/{ConversionFormat.OPENAPI3.value}",
-        files={"file": ("test.har", edge_case_inputs["special_chars"], "application/json")},
+        files={
+            "file": ("test.har", edge_case_inputs["special_chars"], "application/json")
+        },
     )
     # The response should be successful (200) or a well-formed error (400)
     assert response.status_code in [200, 400]
-    
+
     if response.status_code == 200:
         data = response.json()
         # Check that the path was properly escaped/handled
@@ -95,11 +120,13 @@ def test_duplicate_entries(client, edge_case_inputs):
     # Test HAR with duplicate URLs but different methods
     response = client.post(
         f"/api/convert/{ConversionFormat.OPENAPI3.value}",
-        files={"file": ("test.har", edge_case_inputs["duplicate_urls"], "application/json")},
+        files={
+            "file": ("test.har", edge_case_inputs["duplicate_urls"], "application/json")
+        },
     )
     # The response should be successful (200) or a well-formed error (400)
     assert response.status_code in [200, 400]
-    
+
     if response.status_code == 200:
         data = response.json()
         # Check that both GET and POST methods were captured for the same path
@@ -117,7 +144,7 @@ def test_converter_edge_cases(edge_case_inputs):
     """Test converters with edge case inputs (lines 653, 666)."""
     # Use a concrete subclass instead of the abstract FormatConverter
     har_converter = HarToOas3Converter()
-    
+
     # Test with minimal HAR
     try:
         # Test with empty object to exercise error handling code
@@ -125,7 +152,7 @@ def test_converter_edge_cases(edge_case_inputs):
     except Exception:
         # Expected error - continue with test
         pass
-    
+
     # Test with minimal HAR
     result = har_converter.convert_from_string(edge_case_inputs["minimal_har"])
     assert "openapi" in result
@@ -137,7 +164,7 @@ def test_content_type_variants(client):
     """Test content type variants (line 330)."""
     # Test various content-type header formats
     har_data = {"log": {"entries": []}}
-    
+
     # Test with standard content type
     response = client.post(
         f"/api/convert/{ConversionFormat.OPENAPI3.value}",
@@ -145,11 +172,17 @@ def test_content_type_variants(client):
     )
     # The response should be successful (200) or a well-formed error (400)
     assert response.status_code in [200, 400]
-    
+
     # Test with content type including charset
     response = client.post(
         f"/api/convert/{ConversionFormat.OPENAPI3.value}",
-        files={"file": ("test.har", json.dumps(har_data), "application/json; charset=utf-8")},
+        files={
+            "file": (
+                "test.har",
+                json.dumps(har_data),
+                "application/json; charset=utf-8",
+            )
+        },
     )
     # The response should be successful (200) or a well-formed error (400)
     assert response.status_code in [200, 400]

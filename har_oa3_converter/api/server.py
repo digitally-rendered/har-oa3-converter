@@ -37,34 +37,33 @@ app.include_router(conversion_router, prefix="/api")
 @app.exception_handler(TimeoutError)
 async def timeout_exception_handler(request: Request, exc: TimeoutError):
     """Handle TimeoutError exceptions.
-    
+
     Args:
         request: FastAPI request
         exc: TimeoutError exception
-        
+
     Returns:
         JSON response with 408 status code
     """
     return JSONResponse(
-        status_code=408,
-        content={"detail": f"Operation timed out: {str(exc)}"}
+        status_code=408, content={"detail": f"Operation timed out: {str(exc)}"}
     )
 
 
 @app.exception_handler(MemoryError)
 async def memory_exception_handler(request: Request, exc: MemoryError):
     """Handle MemoryError exceptions.
-    
+
     Args:
         request: FastAPI request
         exc: MemoryError exception
-        
+
     Returns:
         JSON response with 413 status code
     """
     return JSONResponse(
         status_code=413,
-        content={"detail": f"Memory error - file too large: {str(exc)}"}
+        content={"detail": f"Memory error - file too large: {str(exc)}"},
     )
 
 

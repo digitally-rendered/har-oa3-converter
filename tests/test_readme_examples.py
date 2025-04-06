@@ -13,7 +13,9 @@ from fastapi.testclient import TestClient
 
 from har_oa3_converter.converter import HarToOas3Converter
 from har_oa3_converter.converters.format_converter import HarToOpenApi3Converter
-from har_oa3_converter.converters.formats.hoppscotch_to_openapi3 import HoppscotchToOpenApi3Converter
+from har_oa3_converter.converters.formats.hoppscotch_to_openapi3 import (
+    HoppscotchToOpenApi3Converter,
+)
 from har_oa3_converter.format_converter import (
     convert_file,
     get_available_formats,
@@ -77,30 +79,23 @@ def sample_hoppscotch_collection():
                         "name": "Get User",
                         "method": "GET",
                         "params": [
-                            {
-                                "key": "include",
-                                "value": "details",
-                                "active": True
-                            }
+                            {"key": "include", "value": "details", "active": True}
                         ],
                         "headers": [
                             {
                                 "key": "Accept",
                                 "value": "application/json",
-                                "active": True
+                                "active": True,
                             }
                         ],
                         "auth": {
                             "authType": "bearer",
                             "authActive": True,
-                            "token": "{{token}}"
+                            "token": "{{token}}",
                         },
-                        "body": {
-                            "contentType": "",
-                            "body": ""
-                        }
+                        "body": {"contentType": "", "body": ""},
                     }
-                ]
+                ],
             }
         ],
         "requests": [
@@ -111,34 +106,17 @@ def sample_hoppscotch_collection():
                 "method": "POST",
                 "params": [],
                 "headers": [
-                    {
-                        "key": "Content-Type",
-                        "value": "application/json",
-                        "active": True
-                    }
+                    {"key": "Content-Type", "value": "application/json", "active": True}
                 ],
-                "auth": {
-                    "authType": "none",
-                    "authActive": False
-                },
+                "auth": {"authType": "none", "authActive": False},
                 "body": {
                     "contentType": "application/json",
-                    "body": "{\n  \"username\": \"testuser\",\n  \"password\": \"password123\"\n}"
-                }
+                    "body": '{\n  "username": "testuser",\n  "password": "password123"\n}',
+                },
             }
         ],
-        "auth": {
-            "authActive": True,
-            "authType": "bearer",
-            "token": "{{token}}"
-        },
-        "headers": [
-            {
-                "active": True,
-                "key": "User-Agent",
-                "value": "Hoppscotch"
-            }
-        ]
+        "auth": {"authActive": True, "authType": "bearer", "token": "{{token}}"},
+        "headers": [{"active": True, "key": "User-Agent", "value": "Hoppscotch"}],
     }
 
 
@@ -217,7 +195,9 @@ class TestReadmeCliExamples:
             # Note: This test is handled separately in test_hoppscotch_api_convert_cli
         ],
     )
-    def test_api_convert_cli(self, command_args, sample_har_data, sample_hoppscotch_collection):
+    def test_api_convert_cli(
+        self, command_args, sample_har_data, sample_hoppscotch_collection
+    ):
         """Test api-convert CLI examples from README."""
         # Create a temporary HAR file if needed
         har_path = None
@@ -228,7 +208,7 @@ class TestReadmeCliExamples:
             ) as f:
                 json.dump(sample_har_data, f)
                 har_path = f.name
-                
+
         # Create a temporary Hoppscotch collection file if needed
         if "hoppscotch_collection.json" in command_args:
             with tempfile.NamedTemporaryFile(
@@ -243,11 +223,12 @@ class TestReadmeCliExamples:
                 command_args = [
                     arg.replace("input.har", har_path) for arg in command_args
                 ]
-                
+
             # Replace hoppscotch_collection.json with actual path if needed
             if hoppscotch_path:
                 command_args = [
-                    arg.replace("hoppscotch_collection.json", hoppscotch_path) for arg in command_args
+                    arg.replace("hoppscotch_collection.json", hoppscotch_path)
+                    for arg in command_args
                 ]
 
             # Mock sys.argv
@@ -263,7 +244,10 @@ class TestReadmeCliExamples:
 
                         # Verify args were parsed correctly
                         assert args is not None
-                        if "input.har" in command_args or "hoppscotch_collection.json" in command_args:  # This was the source
+                        if (
+                            "input.har" in command_args
+                            or "hoppscotch_collection.json" in command_args
+                        ):  # This was the source
                             assert hasattr(args, "source")
                             assert os.path.exists(args.source)
         finally:
@@ -272,25 +256,25 @@ class TestReadmeCliExamples:
                 os.unlink(har_path)
             if hoppscotch_path and os.path.exists(hoppscotch_path):
                 os.unlink(hoppscotch_path)
-                
+
     def test_hoppscotch_api_convert_cli(self, sample_hoppscotch_collection):
         """Test api-convert CLI example for Hoppscotch from README."""
         # Create a temporary Hoppscotch collection file
         with tempfile.NamedTemporaryFile(suffix=".json", mode="w+", delete=False) as f:
             json.dump(sample_hoppscotch_collection, f)
             hoppscotch_path = f.name
-            
+
         try:
             # Command args for Hoppscotch conversion
             command_args = [
-                hoppscotch_path, 
-                "api_spec.yaml", 
-                "--from-format", 
-                "hoppscotch", 
-                "--to-format", 
-                "openapi3"
+                hoppscotch_path,
+                "api_spec.yaml",
+                "--from-format",
+                "hoppscotch",
+                "--to-format",
+                "openapi3",
             ]
-            
+
             # We need to mock the CLI argument parser to accept 'hoppscotch' as a valid format
             # This is a more direct approach than trying to modify the actual parser
             with mock.patch("argparse.ArgumentParser.parse_args") as mock_parse_args:
@@ -307,20 +291,22 @@ class TestReadmeCliExamples:
                 args.base_path = None
                 args.list_formats = False
                 args.no_validate = False
-                
+
                 # Set the return value for the mock
                 mock_parse_args.return_value = args
-                
+
                 # Mock the format_converter functions
                 with mock.patch(
                     "har_oa3_converter.format_converter.get_converter_for_formats",
-                    return_value=HoppscotchToOpenApi3Converter
+                    return_value=HoppscotchToOpenApi3Converter,
                 ):
                     # Mock the main function to prevent actual execution
-                    with mock.patch("har_oa3_converter.cli.format_cli.main") as mock_main:
+                    with mock.patch(
+                        "har_oa3_converter.cli.format_cli.main"
+                    ) as mock_main:
                         # Import the CLI module
                         from har_oa3_converter.cli import format_cli
-                        
+
                         # Verify args were parsed correctly
                         assert args is not None
                         assert hasattr(args, "source")
@@ -508,16 +494,16 @@ class TestReadmeLibraryExamples:
             json.dump(sample_hoppscotch_collection, f)
             f.flush()  # Ensure content is written
             hoppscotch_path = f.name
-            
+
         try:
             # Create a temporary output file
             with tempfile.NamedTemporaryFile(suffix=".yaml", delete=False) as f:
                 output_path = f.name
-                
+
             try:
                 # Initialize converter as shown in README
                 hoppscotch_converter = HoppscotchToOpenApi3Converter()
-                
+
                 # Mock the file operations to avoid actual file I/O
                 with mock.patch(
                     "har_oa3_converter.utils.file_handler.FileHandler.load",
@@ -527,18 +513,20 @@ class TestReadmeLibraryExamples:
                         "har_oa3_converter.utils.file_handler.FileHandler.save"
                     ):
                         # Convert method expects source_path and target_path
-                        result = hoppscotch_converter.convert(hoppscotch_path, output_path)
+                        result = hoppscotch_converter.convert(
+                            hoppscotch_path, output_path
+                        )
                         # Check that the result is a dictionary with OpenAPI 3 structure
                         assert isinstance(result, dict)
                         assert "openapi" in result
                         assert "info" in result
                         assert "paths" in result
-                        
+
                 # Test using format_converter as shown in README
                 # We need to mock both the converter lookup and the actual conversion
                 with mock.patch(
                     "har_oa3_converter.format_converter.get_converter_for_formats",
-                    return_value=HoppscotchToOpenApi3Converter
+                    return_value=HoppscotchToOpenApi3Converter,
                 ):
                     with mock.patch(
                         "har_oa3_converter.format_converter.convert_file",
@@ -559,7 +547,7 @@ class TestReadmeLibraryExamples:
         finally:
             if os.path.exists(hoppscotch_path):
                 os.unlink(hoppscotch_path)
-                
+
     def test_file_handler_api(self, sample_har_data):
         """Test FileHandler API example from README."""
         # Create a temporary HAR file

@@ -1,4 +1,5 @@
 """Configuration file for pytest."""
+
 import os
 import pytest
 
@@ -14,7 +15,7 @@ def pytest_configure(config):
 def pytest_configure_node(node):
     """Configure pytest-xdist worker node."""
     # Log information about parallel execution
-    worker_id = node.workerinput['workerid']
+    worker_id = node.workerinput["workerid"]
     print(f"Configuring worker {worker_id}")
 
 

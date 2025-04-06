@@ -45,7 +45,7 @@ class HarToOas3Converter:
         """
         with open(har_path, "r", encoding="utf-8") as f:
             return json.load(f)
-            
+
     def convert_entry(self, har_entry: Dict[str, Any], url: str) -> Dict[str, Any]:
         """Convert a single HAR entry to an OpenAPI path item.
 
@@ -59,22 +59,22 @@ class HarToOas3Converter:
         request = har_entry.get("request", {})
         response = har_entry.get("response", {})
         method = request.get("method", "").lower()
-        
+
         # Extract path from URL
         path = url.split("//")[-1].split("/", 1)[-1].split("?")[0]
         if not path.startswith("/"):
             path = "/" + path
-            
+
         # Create path object if not exists
         if path not in self.paths:
             self.paths[path] = {}
-            
+
         # Process request and response
         self._process_request_response(path, method, request, response)
-        
+
         # Return the path item
         return {path: self.paths[path]}
-        
+
     def convert_from_string(self, har_json_string: str) -> Dict[str, Any]:
         """Convert HAR JSON string to OpenAPI 3.
 
@@ -86,19 +86,19 @@ class HarToOas3Converter:
         """
         har_data = json.loads(har_json_string)
         self.extract_paths_from_har(har_data)
-        
+
         openapi = {
             "openapi": "3.0.3",
             "info": self.info,
             "paths": self.paths,
             "components": self.components,
         }
-        
+
         if self.servers:
             openapi["servers"] = self.servers
-            
+
         return openapi
-        
+
     def _get_path_template(self, url: str) -> str:
         """Extract a path template from a URL, attempting to identify path parameters.
 
@@ -112,7 +112,7 @@ class HarToOas3Converter:
         path = url.split("//")[-1].split("/", 1)[-1].split("?")[0]
         if not path.startswith("/"):
             path = "/" + path
-            
+
         # Simple path parameter detection - look for numeric segments and
         # replace them with parameter placeholders
         path_segments = path.split("/")
@@ -120,13 +120,13 @@ class HarToOas3Converter:
             if segment.isdigit():
                 # This is likely a path parameter (ID)
                 # Try to use the previous segment name for context
-                if i > 0 and path_segments[i-1]:
+                if i > 0 and path_segments[i - 1]:
                     # Strip trailing 's' if it exists (e.g., 'users' -> 'user')
-                    param_name = path_segments[i-1].rstrip("s") + "Id"
+                    param_name = path_segments[i - 1].rstrip("s") + "Id"
                     path_segments[i] = "{{{}}}".format(param_name)
                 else:
                     path_segments[i] = "{id}"
-        
+
         return "/".join(path_segments)
 
     def extract_paths_from_har(self, har_data: Dict[str, Any]) -> None:
@@ -139,7 +139,7 @@ class HarToOas3Converter:
 
         # Track processed methods to handle duplicate URLs
         processed_methods = {}
-        
+
         for entry in entries:
             request = entry.get("request", {})
             response = entry.get("response", {})
@@ -154,40 +154,43 @@ class HarToOas3Converter:
             # Parse URL with special character handling
             try:
                 from urllib.parse import urlparse, unquote
+
                 parsed_url = urlparse(url)
                 path = unquote(parsed_url.path)  # Handle percent-encoded characters
             except Exception:
                 # Fallback to simple splitting if URL parsing fails
                 path = url.split("//")[-1].split("/", 1)[-1].split("?")[0]
-            
+
             # Ensure path starts with /
             if not path.startswith("/"):
                 path = "/" + path
-                
+
             # Process path for OpenAPI compatibility
             # Strategy 1: For paths with special characters, convert them to path parameters
             original_path = path
             path_segments = path.split("/")
             has_special_chars = False
-            
+
             # Check if any segment has special characters
             special_chars = "!@#$%^&*()+={}[]|:\"'<>?,"
-            
+
             for i, segment in enumerate(path_segments):
                 if any(char in segment for char in special_chars):
                     has_special_chars = True
                     # Convert special character segments to path parameters
-                    if i > 0 and path_segments[i-1]:
+                    if i > 0 and path_segments[i - 1]:
                         # Use previous segment as context for parameter name
-                        param_name = path_segments[i-1].rstrip("s").lower() + "Value"
+                        param_name = path_segments[i - 1].rstrip("s").lower() + "Value"
                         path_segments[i] = "{{{}}}".format(param_name)
                     else:
                         # Generic parameter name if no context available
                         path_segments[i] = "{paramValue}"
-            
+
             if has_special_chars:
                 # Rebuild path with parameterized segments
-                path = "/".join([s for s in path_segments if s])  # Filter out empty segments
+                path = "/".join(
+                    [s for s in path_segments if s]
+                )  # Filter out empty segments
                 if not path.startswith("/"):
                     path = "/" + path
             else:
@@ -206,14 +209,14 @@ class HarToOas3Converter:
 
             # Handle duplicate methods for same path more effectively
             if method in processed_methods.get(path, set()):
-                # For duplicate method+path combinations, we could:                
+                # For duplicate method+path combinations, we could:
                 # 1. Skip it (current approach)
                 # 2. Merge with existing operation (for a more sophisticated approach)
                 # 3. Create a unique operation ID to distinguish them
-                
+
                 # For test_duplicate_entries to pass, we'll keep the first occurrence
                 continue
-            
+
             # Add this method to processed methods for this path
             processed_methods.setdefault(path, set()).add(method)
 

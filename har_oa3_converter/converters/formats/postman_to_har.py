@@ -145,7 +145,9 @@ class PostmanToHarConverter(FormatConverter):
             # Add query parameters
             query_params = self._convert_query_params(url_obj)
             if query_params:
-                query_string = "&".join([f"{p['name']}={p['value']}" for p in query_params])
+                query_string = "&".join(
+                    [f"{p['name']}={p['value']}" for p in query_params]
+                )
                 url = f"{url}?{query_string}"
 
         # Create HAR entry
@@ -194,14 +196,16 @@ class PostmanToHarConverter(FormatConverter):
             self._add_request_body(entry["request"], request_data["body"])
 
         # Add example response if available
-        if "response" in item and isinstance(item["response"], list) and item["response"]:
+        if (
+            "response" in item
+            and isinstance(item["response"], list)
+            and item["response"]
+        ):
             self._add_example_response(entry["response"], item["response"][0])
 
         return entry
 
-    def _convert_headers(
-        self, headers: List[Dict[str, Any]]
-    ) -> List[Dict[str, Any]]:
+    def _convert_headers(self, headers: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Convert Postman headers to HAR format.
 
         Args:
@@ -213,15 +217,15 @@ class PostmanToHarConverter(FormatConverter):
         result = []
         for header in headers:
             if "key" in header and "value" in header:
-                result.append({
-                    "name": header["key"],
-                    "value": header["value"],
-                })
+                result.append(
+                    {
+                        "name": header["key"],
+                        "value": header["value"],
+                    }
+                )
         return result
 
-    def _convert_query_params(
-        self, url_obj: Dict[str, Any]
-    ) -> List[Dict[str, Any]]:
+    def _convert_query_params(self, url_obj: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Convert Postman URL query params to HAR format.
 
         Args:
@@ -234,10 +238,12 @@ class PostmanToHarConverter(FormatConverter):
         query = url_obj.get("query", [])
         for param in query:
             if "key" in param and "value" in param:
-                result.append({
-                    "name": param["key"],
-                    "value": param["value"],
-                })
+                result.append(
+                    {
+                        "name": param["key"],
+                        "value": param["value"],
+                    }
+                )
         return result
 
     def _add_request_body(
@@ -261,12 +267,12 @@ class PostmanToHarConverter(FormatConverter):
                 if header["name"].lower() == "content-type":
                     mime_type = header["value"]
                     break
-            
+
             # Default to JSON if it looks like JSON
             raw_data = body_data.get("raw", "")
             if raw_data.strip().startswith("{") or raw_data.strip().startswith("["):
                 mime_type = "application/json"
-            
+
             request["postData"] = {
                 "mimeType": mime_type,
                 "text": raw_data,
@@ -276,11 +282,13 @@ class PostmanToHarConverter(FormatConverter):
             params = []
             for param in body_data.get("urlencoded", []):
                 if "key" in param and "value" in param:
-                    params.append({
-                        "name": param["key"],
-                        "value": param["value"],
-                    })
-            
+                    params.append(
+                        {
+                            "name": param["key"],
+                            "value": param["value"],
+                        }
+                    )
+
             request["postData"] = {
                 "mimeType": mime_type,
                 "params": params,
@@ -291,11 +299,13 @@ class PostmanToHarConverter(FormatConverter):
             params = []
             for param in body_data.get("formdata", []):
                 if "key" in param and "value" in param:
-                    params.append({
-                        "name": param["key"],
-                        "value": param["value"],
-                    })
-            
+                    params.append(
+                        {
+                            "name": param["key"],
+                            "value": param["value"],
+                        }
+                    )
+
             request["postData"] = {
                 "mimeType": mime_type,
                 "params": params,

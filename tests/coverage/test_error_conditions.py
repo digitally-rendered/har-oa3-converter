@@ -34,19 +34,14 @@ def test_api_unsupported_target_format(client):
                 {
                     "request": {
                         "method": "GET",
-                        "url": "https://example.com/api/users"
+                        "url": "https://example.com/api/users",
                     },
-                    "response": {
-                        "status": 200,
-                        "content": {
-                            "text": "{}"
-                        }
-                    }
+                    "response": {"status": 200, "content": {"text": "{}"}},
                 }
-            ]
+            ],
         }
     }
-    
+
     # Test with unsupported format
     response = client.post(
         "/api/convert/unsupported_format",
@@ -72,13 +67,13 @@ def test_api_invalid_content_type(client):
     assert any(
         error_term in error_text
         for error_term in [
-            "invalid", 
-            "unsupported", 
-            "error", 
-            "failed", 
-            "conversion", 
-            "format", 
-            "source file"
+            "invalid",
+            "unsupported",
+            "error",
+            "failed",
+            "conversion",
+            "format",
+            "source file",
         ]
     )
 
@@ -87,8 +82,9 @@ def test_converter_error_handling():
     """Test error handling in format converters (lines 912-914, 920-924)."""
     # Use a concrete class instead of the abstract FormatConverter
     from har_oa3_converter.converters.har_to_oas3 import HarToOas3Converter
+
     converter = HarToOas3Converter()
-    
+
     # Test with invalid content
     try:
         # Call convert_from_string with invalid content
@@ -97,11 +93,11 @@ def test_converter_error_handling():
     except Exception:
         # Expected to fail
         assert True
-    
+
     # Test with invalid format
     try:
         # Simulate converting an empty object, which should fail validation
-        converter.convert_from_string("{}") 
+        converter.convert_from_string("{}")
         assert False, "Should have raised an exception"
     except Exception:
         # Expected to fail
@@ -113,6 +109,7 @@ def test_schema_validation_errors():
     # Try to validate an invalid schema
     try:
         from jsonschema import validate
+
         # Invalid schema - missing required properties but requiring a specific property
         invalid_schema = {"type": "object", "required": ["name"]}
         invalid_data = {"value": 123}  # Missing 'name' property

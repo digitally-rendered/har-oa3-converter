@@ -121,14 +121,14 @@ def test_api_convert_endpoint(client, sample_har_file):
         response = client.post(f"/api/convert/{target_format}", files=files, data=data)
 
     assert response.status_code == 200
-    
+
     # Ensure we got a non-empty response
     assert len(response.content) > 0
-    
+
     try:
         # Try to parse as JSON
         result = response.json()
-        
+
         # Validate the response structure conforms to OpenAPI 3
         assert "openapi" in result
         assert result["openapi"].startswith("3.")  # Should be OpenAPI 3.x
@@ -139,14 +139,17 @@ def test_api_convert_endpoint(client, sample_har_file):
         # If it's not JSON, try to parse as YAML
         try:
             import yaml
+
             yaml_result = yaml.safe_load(response.content)
             assert yaml_result is not None
-            
+
             # Validate the response structure conforms to OpenAPI 3
             assert "openapi" in yaml_result
             assert yaml_result["openapi"].startswith("3.")  # Should be OpenAPI 3.x
             assert "info" in yaml_result
-            assert yaml_result["info"]["title"] == "Test API"  # Title should match what we sent
+            assert (
+                yaml_result["info"]["title"] == "Test API"
+            )  # Title should match what we sent
             # Don't strictly assert paths as they might be empty in test data
         except Exception as e:
             # If parsing fails, just check for non-empty response
@@ -209,14 +212,14 @@ def test_api_custom_options(client, sample_har_file):
         response = client.post(f"/api/convert/{target_format}", files=files, data=data)
 
     assert response.status_code == 200
-    
+
     # Ensure we got a non-empty response
     assert len(response.content) > 0
-    
+
     try:
         # Try to parse as JSON
         result = response.json()
-        
+
         # Verify custom options were applied
         assert result["info"]["title"] == custom_title
         assert result["info"]["version"] == custom_version
@@ -225,9 +228,10 @@ def test_api_custom_options(client, sample_har_file):
         # If it's not JSON, try to parse as YAML
         try:
             import yaml
+
             yaml_result = yaml.safe_load(response.content)
             assert yaml_result is not None
-            
+
             # Verify custom options were applied
             assert yaml_result["info"]["title"] == custom_title
             assert yaml_result["info"]["version"] == custom_version

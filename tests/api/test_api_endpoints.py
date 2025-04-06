@@ -180,10 +180,10 @@ class TestConvertEndpoint:
             response = client.post("/api/convert/openapi3", files=files, data=data)
 
         assert response.status_code == status.HTTP_200_OK
-        
+
         # Ensure we got a non-empty response
         assert len(response.content) > 0
-        
+
         try:
             # Try to parse as JSON
             data = response.json()

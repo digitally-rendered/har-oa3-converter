@@ -10,7 +10,11 @@ from pathlib import Path
 import pytest
 import yaml
 
-from tests.docker.docker_utils import docker_available, generate_random_container_name, cleanup_container
+from tests.docker.docker_utils import (
+    docker_available,
+    generate_random_container_name,
+    cleanup_container,
+)
 
 
 def run_docker_command(command, volumes=None):

@@ -153,7 +153,7 @@ class TestContentTypes:
 
             # Ensure we got a non-empty response
             assert len(response.content) > 0
-            
+
             # For YAML specific accept headers
             if accept in ["application/x-yaml", "text/yaml"]:
                 # Allow multiple YAML content types
@@ -161,15 +161,19 @@ class TestContentTypes:
                     ct in content_type
                     for ct in ["application/x-yaml", "application/yaml", "text/yaml"]
                 ), f"Wrong content type {content_type} for Accept: {accept}"
-                
+
                 try:
                     # Verify YAML can be parsed
                     data = yaml.safe_load(response.content)
                     assert data is not None
                     # Validate basic OpenAPI structure
-                    assert isinstance(data, dict), f"Expected dictionary response, got {type(data)}"
+                    assert isinstance(
+                        data, dict
+                    ), f"Expected dictionary response, got {type(data)}"
                     # Some implementations might use 'swagger' instead of 'openapi' for swagger specs
-                    assert "openapi" in data or "swagger" in data, "Missing openapi/swagger version"
+                    assert (
+                        "openapi" in data or "swagger" in data
+                    ), "Missing openapi/swagger version"
                     # Don't strictly assert paths as they might be empty in test data
                 except Exception as e:
                     # If parsing fails, just check for non-empty response
@@ -186,15 +190,21 @@ class TestContentTypes:
                         "application/x-yaml" == content_type,
                     ]
                 )
-                assert acceptable, f"Unexpected content type {content_type} for Accept: {accept}"
-                
+                assert (
+                    acceptable
+                ), f"Unexpected content type {content_type} for Accept: {accept}"
+
                 try:
                     # Try to parse as JSON first
                     data = response.json()
                     # Validate basic OpenAPI structure
-                    assert isinstance(data, dict), f"Expected dictionary response, got {type(data)}"
+                    assert isinstance(
+                        data, dict
+                    ), f"Expected dictionary response, got {type(data)}"
                     # Some implementations might use 'swagger' instead of 'openapi' for swagger specs
-                    assert "openapi" in data or "swagger" in data, "Missing openapi/swagger version"
+                    assert (
+                        "openapi" in data or "swagger" in data
+                    ), "Missing openapi/swagger version"
                     # Don't strictly assert paths as they might be empty in test data
                 except json.JSONDecodeError:
                     # If it's not JSON, try to parse as YAML
@@ -202,23 +212,33 @@ class TestContentTypes:
                         data = yaml.safe_load(response.content)
                         assert data is not None
                         # Validate basic OpenAPI structure
-                        assert isinstance(data, dict), f"Expected dictionary response, got {type(data)}"
+                        assert isinstance(
+                            data, dict
+                        ), f"Expected dictionary response, got {type(data)}"
                         # Some implementations might use 'swagger' instead of 'openapi' for swagger specs
-                        assert "openapi" in data or "swagger" in data, "Missing openapi/swagger version"
+                        assert (
+                            "openapi" in data or "swagger" in data
+                        ), "Missing openapi/swagger version"
                         # Don't strictly assert paths as they might be empty in test data
                     except Exception as e:
                         # If parsing fails, just check for non-empty response
                         pass
             # For explicit JSON
             else:
-                assert "json" in content_type or "application/json" == content_type, f"Wrong content type {content_type} for Accept: {accept}"
-                
+                assert (
+                    "json" in content_type or "application/json" == content_type
+                ), f"Wrong content type {content_type} for Accept: {accept}"
+
                 try:
                     data = response.json()
                     # Validate basic OpenAPI structure
-                    assert isinstance(data, dict), f"Expected dictionary response, got {type(data)}"
+                    assert isinstance(
+                        data, dict
+                    ), f"Expected dictionary response, got {type(data)}"
                     # Some implementations might use 'swagger' instead of 'openapi' for swagger specs
-                    assert "openapi" in data or "swagger" in data, "Missing openapi/swagger version"
+                    assert (
+                        "openapi" in data or "swagger" in data
+                    ), "Missing openapi/swagger version"
                     # Don't strictly assert paths as they might be empty in test data
                 except json.JSONDecodeError:
                     # If parsing fails, just check for non-empty response
@@ -256,10 +276,10 @@ class TestContentTypes:
         assert (
             response.status_code == 200
         ), f"Failed with source_format: {response.status_code}"
-        
+
         # Ensure we got a non-empty response
         assert len(response.content) > 0
-        
+
         try:
             # Try to parse as JSON
             data = response.json()
@@ -295,10 +315,10 @@ class TestContentTypes:
 
         # Should still work because we override the source format
         assert response.status_code == 200
-        
+
         # Ensure we got a non-empty response
         assert len(response.content) > 0
-        
+
         try:
             # Try to parse as JSON
             data = response.json()
@@ -380,7 +400,7 @@ class TestSchemaValidation:
         if response.status_code == 200:
             # Ensure we got a non-empty response
             assert len(response.content) > 0
-            
+
             try:
                 # Try to parse as JSON
                 data = response.json()

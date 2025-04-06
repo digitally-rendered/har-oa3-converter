@@ -256,6 +256,7 @@ def load_hoppscotch_schema() -> Dict[str, Any]:
     with open(schema_path, "r", encoding="utf-8") as f:
         return json.load(f)
 
+
 # Load the Hoppscotch schema
 try:
     HOPPSCOTCH_SCHEMA = load_hoppscotch_schema()
@@ -268,9 +269,10 @@ except Exception as e:
             "v": {"type": ["integer", "string"]},
             "name": {"type": "string"},
             "folders": {"type": "array"},
-            "requests": {"type": "array"}
-        }
+            "requests": {"type": "array"},
+        },
     }
+
 
 def get_schema(schema_name: str) -> Optional[Dict[str, Any]]:
     """Get schema by name.

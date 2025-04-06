@@ -52,7 +52,7 @@ class OpenApi3ToOpenApi3Converter(FormatConverter):
         # Write to target file if specified
         if target_path:
             os.makedirs(os.path.dirname(os.path.abspath(target_path)), exist_ok=True)
-            
+
             # Use FileHandler to save the file in the appropriate format
             file_handler.save(openapi3, target_path)
 

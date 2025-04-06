@@ -12,7 +12,11 @@ import pytest
 import requests
 import yaml
 
-from tests.docker.docker_utils import docker_available, generate_random_container_name, cleanup_container
+from tests.docker.docker_utils import (
+    docker_available,
+    generate_random_container_name,
+    cleanup_container,
+)
 from tests.docker.test_docker_functionality import docker_running
 
 
@@ -49,21 +53,26 @@ class DockerAPIContainer:
         if image_name is None:
             # Get Python version and format it for Docker tag
             import sys
+
             python_version = sys.version.split()[0]  # e.g., '3.10.4'
-            major_minor = '.'.join(python_version.split('.')[:2])  # e.g., '3.10'
-            docker_tag = major_minor.replace('.', '_')  # e.g., '3_10'
-            
+            major_minor = ".".join(python_version.split(".")[:2])  # e.g., '3.10'
+            docker_tag = major_minor.replace(".", "_")  # e.g., '3_10'
+
             # Try version-specific image first, fall back to latest
             self.image_name = f"har-oa3-converter:py{docker_tag}"
-            
+
             # Check if the image exists, otherwise fall back to latest
             try:
                 cmd = ["docker", "image", "inspect", self.image_name]
                 subprocess.run(cmd, capture_output=True, check=True)
-                print(f"Using Python {major_minor} specific Docker image: {self.image_name}")
+                print(
+                    f"Using Python {major_minor} specific Docker image: {self.image_name}"
+                )
             except subprocess.CalledProcessError:
                 self.image_name = "har-oa3-converter:latest"
-                print(f"Python {major_minor} specific Docker image not found, using: {self.image_name}")
+                print(
+                    f"Python {major_minor} specific Docker image not found, using: {self.image_name}"
+                )
         else:
             self.image_name = image_name
         # Generate a unique container name to avoid conflicts
@@ -74,25 +83,27 @@ class DockerAPIContainer:
         self.headers = {"Accept": "application/json"}  # Default headers for JSON
         self._container_id = None
         self._mock_mode = False  # Flag to indicate if running in mock mode
-        
+
     def _find_free_port(self) -> int:
         """Find a free port to use for the Docker container."""
         import socket
         import random
-        
+
         # When running in parallel with pytest-xdist, add worker id to port base
         # to reduce chance of conflicts between workers
         worker_id = os.environ.get("PYTEST_XDIST_WORKER", "")
-        worker_offset = int(worker_id.replace("gw", "") or "0") * 100 if worker_id else 0
-        
+        worker_offset = (
+            int(worker_id.replace("gw", "") or "0") * 100 if worker_id else 0
+        )
+
         # Try to find a free port in a higher range (10000-65000) with worker offset
         base_port = 10000 + worker_offset
         max_attempts = 10
-        
+
         for _ in range(max_attempts):
             # Generate a random port in a higher range with worker offset
             port = base_port + random.randint(1000, 5000)
-            
+
             # Verify the port is actually free
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 try:
@@ -101,7 +112,7 @@ class DockerAPIContainer:
                 except OSError:
                     # Port is in use, try another one
                     continue
-                    
+
         # Fallback to OS-assigned port if we couldn't find a free one
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.bind((self.host, 0))
@@ -172,27 +183,27 @@ class DockerAPIContainer:
     def _cleanup_existing_container(self) -> None:
         """Remove any existing container with the same name and clean up stale containers."""
         from tests.docker.docker_utils import cleanup_container
-        
+
         # Clean up the specific container for this test
         if cleanup_container(self.container_name):
             print(f"Cleaned up existing container: {self.container_name}")
-            
+
         # Also clean up any stale containers from previous test runs
         # that might have the same prefix (especially important for parallel testing)
         try:
             # List all containers with our prefix
             cmd = [
-                "docker", 
-                "ps", 
-                "-a", 
-                "--filter", 
-                f"name=har-oa3-api", 
-                "--format", 
-                "{{.Names}}"
+                "docker",
+                "ps",
+                "-a",
+                "--filter",
+                f"name=har-oa3-api",
+                "--format",
+                "{{.Names}}",
             ]
             result = subprocess.run(cmd, capture_output=True, text=True)
             if result.returncode == 0 and result.stdout.strip():
-                stale_containers = result.stdout.strip().split('\n')
+                stale_containers = result.stdout.strip().split("\n")
                 for container in stale_containers:
                     # Skip our current container
                     if container == self.container_name:
@@ -222,21 +233,24 @@ class DockerAPIContainer:
 def api_container() -> Generator[DockerAPIContainer, None, None]:
     """Fixture to provide a running Docker API container."""
     # Build the Docker image in CI environments
-    if os.environ.get('CI') == 'true' or os.environ.get('GITHUB_ACTIONS') == 'true':
+    if os.environ.get("CI") == "true" or os.environ.get("GITHUB_ACTIONS") == "true":
         print("Building Docker image for CI environment...")
         try:
             # Get the project root directory
             project_root = Path(__file__).parent.parent.parent.absolute()
             build_cmd = [
-                "docker", "build", "-t", "har-oa3-converter:latest",
-                str(project_root)
+                "docker",
+                "build",
+                "-t",
+                "har-oa3-converter:latest",
+                str(project_root),
             ]
             subprocess.run(build_cmd, check=True, capture_output=True, text=True)
             print("Docker image built successfully")
         except subprocess.CalledProcessError as e:
             pytest.skip(f"Failed to build Docker image: {e.stderr}")
             return
-    
+
     with DockerAPIContainer() as container:
         yield container
 

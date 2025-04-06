@@ -14,7 +14,11 @@ from tests.docker.test_docker_functionality import (
     docker_running,
     alert_when_docker_not_available,
 )
-from tests.docker.test_docker_api import DockerAPIContainer, wait_for_server, api_container
+from tests.docker.test_docker_api import (
+    DockerAPIContainer,
+    wait_for_server,
+    api_container,
+)
 
 
 @pytest.fixture
@@ -216,12 +220,21 @@ def test_content_type_header_validation(api_container: DockerAPIContainer) -> No
                     error = response.json()
                     assert "detail" in error
                     # The error message might vary, so we'll check for common error terms
-                    assert any(term in error["detail"].lower() for term in [
-                        "content type", "format", "method", "not allowed", "unsupported"
-                    ])
+                    assert any(
+                        term in error["detail"].lower()
+                        for term in [
+                            "content type",
+                            "format",
+                            "method",
+                            "not allowed",
+                            "unsupported",
+                        ]
+                    )
                 except json.JSONDecodeError:
                     # If the response is not JSON, it's still acceptable as long as it's an error response
-                    assert response.status_code >= 400, "Expected an error response for invalid content type"
+                    assert (
+                        response.status_code >= 400
+                    ), "Expected an error response for invalid content type"
 
 
 @docker_running
@@ -273,4 +286,6 @@ def test_schema_completeness(api_container: DockerAPIContainer) -> None:
                                         # Some endpoints might not have explicit schemas, so we'll make this more flexible
                                         # Instead of failing, we'll just log a warning
                                         if "schema" not in content_schema:
-                                            print(f"Warning: Response for {method} {path} does not have an explicit schema")
+                                            print(
+                                                f"Warning: Response for {method} {path} does not have an explicit schema"
+                                            )

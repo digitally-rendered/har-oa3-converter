@@ -51,7 +51,9 @@ class HoppscotchToOpenApi3Converter(FormatConverter):
 
         # Validate it's a Hoppscotch Collection
         if not self._is_valid_hoppscotch_collection(hoppscotch_data):
-            raise ValueError(f"The file {source_path} is not a valid Hoppscotch Collection")
+            raise ValueError(
+                f"The file {source_path} is not a valid Hoppscotch Collection"
+            )
 
         # Convert to OpenAPI 3
         openapi3_data = self._convert_to_openapi3(hoppscotch_data, **options)
@@ -76,20 +78,22 @@ class HoppscotchToOpenApi3Converter(FormatConverter):
             return False
 
         # Check for version field
-        if 'v' not in data:
+        if "v" not in data:
             return False
 
         # Check for name field
-        if 'name' not in data:
+        if "name" not in data:
             return False
 
         # Check for folders and requests fields
-        if 'folders' not in data or 'requests' not in data:
+        if "folders" not in data or "requests" not in data:
             return False
 
         return True
 
-    def _convert_to_openapi3(self, hoppscotch_data: Dict[str, Any], **options) -> Dict[str, Any]:
+    def _convert_to_openapi3(
+        self, hoppscotch_data: Dict[str, Any], **options
+    ) -> Dict[str, Any]:
         """Convert Hoppscotch Collection to OpenAPI 3.
 
         Args:
@@ -135,7 +139,9 @@ class HoppscotchToOpenApi3Converter(FormatConverter):
 
         return openapi3
 
-    def _process_collection_auth(self, collection: Dict[str, Any], openapi3: Dict[str, Any]) -> None:
+    def _process_collection_auth(
+        self, collection: Dict[str, Any], openapi3: Dict[str, Any]
+    ) -> None:
         """Process collection authentication and add to OpenAPI 3 security schemes.
 
         Args:
@@ -161,30 +167,38 @@ class HoppscotchToOpenApi3Converter(FormatConverter):
         elif auth_type == "oauth-2":
             grant_type_info = auth.get("grantTypeInfo", {})
             grant_type = grant_type_info.get("grantType")
-            
+
             flows = {}
             if grant_type == "AUTHORIZATION_CODE":
                 flows["authorizationCode"] = {
                     "authorizationUrl": grant_type_info.get("authUrl", ""),
                     "tokenUrl": grant_type_info.get("tokenUrl", ""),
-                    "scopes": self._parse_oauth2_scopes(grant_type_info.get("scopes", "")),
+                    "scopes": self._parse_oauth2_scopes(
+                        grant_type_info.get("scopes", "")
+                    ),
                 }
             elif grant_type == "CLIENT_CREDENTIALS":
                 flows["clientCredentials"] = {
                     "tokenUrl": grant_type_info.get("tokenUrl", ""),
-                    "scopes": self._parse_oauth2_scopes(grant_type_info.get("scopes", "")),
+                    "scopes": self._parse_oauth2_scopes(
+                        grant_type_info.get("scopes", "")
+                    ),
                 }
             elif grant_type == "PASSWORD":
                 flows["password"] = {
                     "tokenUrl": grant_type_info.get("tokenUrl", ""),
-                    "scopes": self._parse_oauth2_scopes(grant_type_info.get("scopes", "")),
+                    "scopes": self._parse_oauth2_scopes(
+                        grant_type_info.get("scopes", "")
+                    ),
                 }
             elif grant_type == "IMPLICIT":
                 flows["implicit"] = {
                     "authorizationUrl": grant_type_info.get("authUrl", ""),
-                    "scopes": self._parse_oauth2_scopes(grant_type_info.get("scopes", "")),
+                    "scopes": self._parse_oauth2_scopes(
+                        grant_type_info.get("scopes", "")
+                    ),
                 }
-                
+
             openapi3["components"]["securitySchemes"]["oauth2"] = {
                 "type": "oauth2",
                 "flows": flows,
@@ -194,7 +208,7 @@ class HoppscotchToOpenApi3Converter(FormatConverter):
             in_location = "header"
             if auth.get("addTo") == "QUERY_PARAMS":
                 in_location = "query"
-                
+
             openapi3["components"]["securitySchemes"][key] = {
                 "type": "apiKey",
                 "name": key,
@@ -213,13 +227,15 @@ class HoppscotchToOpenApi3Converter(FormatConverter):
         scopes = {}
         if not scopes_str:
             return scopes
-            
+
         for scope in scopes_str.split():
             scopes[scope] = ""
-            
+
         return scopes
 
-    def _process_requests(self, collection: Dict[str, Any], openapi3: Dict[str, Any], tag: str = "") -> None:
+    def _process_requests(
+        self, collection: Dict[str, Any], openapi3: Dict[str, Any], tag: str = ""
+    ) -> None:
         """Process requests in the collection and add to OpenAPI 3 paths.
 
         Args:
@@ -230,7 +246,9 @@ class HoppscotchToOpenApi3Converter(FormatConverter):
         for request in collection.get("requests", []):
             self._process_request(request, openapi3, tag)
 
-    def _process_folder(self, folder: Dict[str, Any], openapi3: Dict[str, Any], parent_tag: str = "") -> None:
+    def _process_folder(
+        self, folder: Dict[str, Any], openapi3: Dict[str, Any], parent_tag: str = ""
+    ) -> None:
         """Process a folder in the collection recursively.
 
         Args:
@@ -250,7 +268,9 @@ class HoppscotchToOpenApi3Converter(FormatConverter):
         for subfolder in folder.get("folders", []):
             self._process_folder(subfolder, openapi3, tag)
 
-    def _process_request(self, request: Dict[str, Any], openapi3: Dict[str, Any], tag: str = "") -> None:
+    def _process_request(
+        self, request: Dict[str, Any], openapi3: Dict[str, Any], tag: str = ""
+    ) -> None:
         """Process a request and add to OpenAPI 3 paths.
 
         Args:
@@ -290,60 +310,66 @@ class HoppscotchToOpenApi3Converter(FormatConverter):
 
         # Add path parameters
         for param in path_params:
-            operation["parameters"].append({
-                "name": param,
-                "in": "path",
-                "required": True,
-                "schema": {
-                    "type": "string",
-                },
-            })
+            operation["parameters"].append(
+                {
+                    "name": param,
+                    "in": "path",
+                    "required": True,
+                    "schema": {
+                        "type": "string",
+                    },
+                }
+            )
 
         # Add query parameters
         for param in request.get("params", []):
             if not param.get("key"):
                 continue
-                
+
             if not param.get("active", True):
                 continue
-                
-            operation["parameters"].append({
-                "name": param.get("key", ""),
-                "in": "query",
-                "required": param.get("required", False),
-                "schema": {
-                    "type": "string",
-                    "default": param.get("value", ""),
-                },
-            })
+
+            operation["parameters"].append(
+                {
+                    "name": param.get("key", ""),
+                    "in": "query",
+                    "required": param.get("required", False),
+                    "schema": {
+                        "type": "string",
+                        "default": param.get("value", ""),
+                    },
+                }
+            )
 
         # Add headers
         for header in request.get("headers", []):
             if not header.get("key"):
                 continue
-                
+
             if not header.get("active", True):
                 continue
-                
-            operation["parameters"].append({
-                "name": header.get("key", ""),
-                "in": "header",
-                "required": header.get("required", False),
-                "schema": {
-                    "type": "string",
-                    "default": header.get("value", ""),
-                },
-            })
+
+            operation["parameters"].append(
+                {
+                    "name": header.get("key", ""),
+                    "in": "header",
+                    "required": header.get("required", False),
+                    "schema": {
+                        "type": "string",
+                        "default": header.get("value", ""),
+                    },
+                }
+            )
 
         # Add request body
         body = request.get("body", {})
         body_type = body.get("contentType", "")
-        
+
         if body and method in ["post", "put", "patch"]:
             request_body = {
                 "content": {},
             }
-            
+
             if body_type == "application/json":
                 json_data = body.get("body", "")
                 if json_data:
@@ -371,7 +397,7 @@ class HoppscotchToOpenApi3Converter(FormatConverter):
                         "type": "string",
                         "example": item.get("value", ""),
                     }
-                    
+
                 if form_data:
                     request_body["content"]["multipart/form-data"] = {
                         "schema": {
@@ -388,7 +414,7 @@ class HoppscotchToOpenApi3Converter(FormatConverter):
                         "type": "string",
                         "example": item.get("value", ""),
                     }
-                    
+
                 if form_data:
                     request_body["content"]["application/x-www-form-urlencoded"] = {
                         "schema": {
@@ -411,7 +437,7 @@ class HoppscotchToOpenApi3Converter(FormatConverter):
                         "example": body.get("body", ""),
                     },
                 }
-                
+
             if request_body["content"]:
                 operation["requestBody"] = request_body
 
@@ -431,44 +457,50 @@ class HoppscotchToOpenApi3Converter(FormatConverter):
             Tuple of (path, path_parameters)
         """
         # Remove query string if present
-        if '?' in url:
-            url = url.split('?')[0]
-            
+        if "?" in url:
+            url = url.split("?")[0]
+
         # Parse URL to extract path
         from urllib.parse import urlparse
+
         parsed_url = urlparse(url)
         path = parsed_url.path
-        
+
         # If path is empty but we have a netloc, use the netloc as the path
         # This handles cases where the URL doesn't have a path component
         if not path and parsed_url.netloc:
-            path = '/'
-            
+            path = "/"
+
         # Split path into segments
-        segments = path.split('/')
+        segments = path.split("/")
         path_params = []
-        
+
         # Process each segment
         for i, segment in enumerate(segments):
             # Check if segment is a path parameter (starts with : or {})
-            if segment.startswith(':'):
+            if segment.startswith(":"):
                 param_name = segment[1:]
-                segments[i] = '{' + param_name + '}'
+                segments[i] = "{" + param_name + "}"
                 path_params.append(param_name)
-            elif segment.startswith('{') and segment.endswith('}'):
+            elif segment.startswith("{") and segment.endswith("}"):
                 param_name = segment[1:-1]
                 path_params.append(param_name)
-                
+
         # Reconstruct path
-        path = '/'.join(segments)
-        
+        path = "/".join(segments)
+
         # Ensure path starts with /
-        if not path.startswith('/'):
-            path = '/' + path
-            
+        if not path.startswith("/"):
+            path = "/" + path
+
         return path, path_params
 
-    def _process_request_auth(self, request: Dict[str, Any], operation: Dict[str, Any], openapi3: Dict[str, Any]) -> None:
+    def _process_request_auth(
+        self,
+        request: Dict[str, Any],
+        operation: Dict[str, Any],
+        openapi3: Dict[str, Any],
+    ) -> None:
         """Process request authentication and add to operation.
 
         Args:
@@ -478,16 +510,16 @@ class HoppscotchToOpenApi3Converter(FormatConverter):
         """
         auth = request.get("auth", {})
         auth_type = auth.get("authType")
-        
+
         if not auth_type or auth_type == "none" or not auth.get("authActive", False):
             return
-            
+
         if auth_type == "inherit":
             # Inherit from collection, already processed
             return
-            
+
         security = []
-        
+
         if auth_type == "basic":
             security_name = "basicAuth"
             if security_name not in openapi3["components"]["securitySchemes"]:
@@ -510,30 +542,38 @@ class HoppscotchToOpenApi3Converter(FormatConverter):
                 # Process OAuth2 configuration
                 grant_type_info = auth.get("grantTypeInfo", {})
                 grant_type = grant_type_info.get("grantType")
-                
+
                 flows = {}
                 if grant_type == "AUTHORIZATION_CODE":
                     flows["authorizationCode"] = {
                         "authorizationUrl": grant_type_info.get("authUrl", ""),
                         "tokenUrl": grant_type_info.get("tokenUrl", ""),
-                        "scopes": self._parse_oauth2_scopes(grant_type_info.get("scopes", "")),
+                        "scopes": self._parse_oauth2_scopes(
+                            grant_type_info.get("scopes", "")
+                        ),
                     }
                 elif grant_type == "CLIENT_CREDENTIALS":
                     flows["clientCredentials"] = {
                         "tokenUrl": grant_type_info.get("tokenUrl", ""),
-                        "scopes": self._parse_oauth2_scopes(grant_type_info.get("scopes", "")),
+                        "scopes": self._parse_oauth2_scopes(
+                            grant_type_info.get("scopes", "")
+                        ),
                     }
                 elif grant_type == "PASSWORD":
                     flows["password"] = {
                         "tokenUrl": grant_type_info.get("tokenUrl", ""),
-                        "scopes": self._parse_oauth2_scopes(grant_type_info.get("scopes", "")),
+                        "scopes": self._parse_oauth2_scopes(
+                            grant_type_info.get("scopes", "")
+                        ),
                     }
                 elif grant_type == "IMPLICIT":
                     flows["implicit"] = {
                         "authorizationUrl": grant_type_info.get("authUrl", ""),
-                        "scopes": self._parse_oauth2_scopes(grant_type_info.get("scopes", "")),
+                        "scopes": self._parse_oauth2_scopes(
+                            grant_type_info.get("scopes", "")
+                        ),
                     }
-                    
+
                 openapi3["components"]["securitySchemes"][security_name] = {
                     "type": "oauth2",
                     "flows": flows,
@@ -545,7 +585,7 @@ class HoppscotchToOpenApi3Converter(FormatConverter):
             in_location = "header"
             if auth.get("addTo") == "QUERY_PARAMS":
                 in_location = "query"
-                
+
             if security_name not in openapi3["components"]["securitySchemes"]:
                 openapi3["components"]["securitySchemes"][security_name] = {
                     "type": "apiKey",
@@ -553,7 +593,7 @@ class HoppscotchToOpenApi3Converter(FormatConverter):
                     "in": in_location,
                 }
             security.append({security_name: []})
-            
+
         if security:
             operation["security"] = security
 

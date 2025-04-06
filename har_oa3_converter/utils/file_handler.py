@@ -204,4 +204,3 @@ class FileHandler:
                 return yaml.safe_load(content)
             except yaml.YAMLError as e:
                 raise ValueError(f"Unable to parse file content: {str(e)}")
-

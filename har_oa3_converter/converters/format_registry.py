@@ -8,11 +8,19 @@ import yaml
 
 from har_oa3_converter.converters.formats.base import FormatConverter
 from har_oa3_converter.converters.formats.har_to_openapi3 import HarToOpenApi3Converter
-from har_oa3_converter.converters.formats.hoppscotch_to_openapi3 import HoppscotchToOpenApi3Converter
-from har_oa3_converter.converters.formats.openapi3_to_openapi3 import OpenApi3ToOpenApi3Converter
-from har_oa3_converter.converters.formats.openapi3_to_swagger import OpenApi3ToSwaggerConverter
+from har_oa3_converter.converters.formats.hoppscotch_to_openapi3 import (
+    HoppscotchToOpenApi3Converter,
+)
+from har_oa3_converter.converters.formats.openapi3_to_openapi3 import (
+    OpenApi3ToOpenApi3Converter,
+)
+from har_oa3_converter.converters.formats.openapi3_to_swagger import (
+    OpenApi3ToSwaggerConverter,
+)
 from har_oa3_converter.converters.formats.postman_to_har import PostmanToHarConverter
-from har_oa3_converter.converters.formats.postman_to_openapi3 import PostmanToOpenApi3Converter
+from har_oa3_converter.converters.formats.postman_to_openapi3 import (
+    PostmanToOpenApi3Converter,
+)
 from har_oa3_converter.converters.schema_validator import validate_file, detect_format
 from har_oa3_converter.utils.file_handler import FileHandler
 
@@ -36,16 +44,16 @@ def get_available_formats() -> List[str]:
     """
     # Explicitly collect all formats from registered converters
     formats = set()
-    
+
     for converter_cls in CONVERTERS:
         source_fmt = converter_cls.get_source_format()
         target_fmt = converter_cls.get_target_format()
         formats.add(source_fmt)
         formats.add(target_fmt)
-    
+
     # Explicitly add all known formats to ensure they're included
     formats.update(["har", "openapi3", "swagger", "postman", "hoppscotch"])
-    
+
     return sorted(list(formats))
 
 
@@ -106,9 +114,8 @@ def guess_format_from_file(file_path: str) -> Tuple[Optional[str], Optional[str]
         format_name = extension_map.get(ext)
         if format_name:
             return format_name, None
-        
-        return None, f"Unable to determine format for {file_path}"
 
+        return None, f"Unable to determine format for {file_path}"
 
 
 def convert_file(
@@ -154,7 +161,7 @@ def convert_file(
         # For target path, we'll use extension-based detection as the file might not exist yet
         _, ext = os.path.splitext(target_path)
         ext = ext.lower()
-        
+
         # Map extensions to formats
         extension_map = {
             ".har": "har",
@@ -163,13 +170,13 @@ def convert_file(
             ".yml": "openapi3",  # Default YAML to OpenAPI 3
             ".postman_collection.json": "postman",
         }
-        
+
         # Special case for Postman collections
         if target_path.endswith(".postman_collection.json"):
             target_format = "postman"
         else:
             target_format = extension_map.get(ext)
-            
+
         if not target_format:
             raise ValueError(
                 f"Could not determine target format for file: {target_path}"
@@ -179,10 +186,8 @@ def convert_file(
     if validate_schema:
         is_valid, detected_format, error = validate_file(source_path)
         if not is_valid:
-            raise ValueError(
-                f"Source file validation failed: {error}"
-            )
-        
+            raise ValueError(f"Source file validation failed: {error}")
+
         # If source_format was not provided but detected, use the detected format
         if not source_format and detected_format:
             source_format = detected_format

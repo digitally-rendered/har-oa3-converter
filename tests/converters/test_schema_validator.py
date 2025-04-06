@@ -303,16 +303,16 @@ class TestSchemaValidator:
             assert "Expecting value" in error
         finally:
             os.unlink(file_path)
-            
+
     def test_validate_schema_object_valid(self, sample_har_data):
         """Test validating a valid object against a schema."""
         # Validate the object against the HAR schema
         is_valid, error = validate_schema_object(sample_har_data, "har")
-        
+
         # Verify the results
         assert is_valid
         assert error is None
-        
+
     def test_validate_schema_object_invalid(self):
         """Test validating an invalid object against a schema."""
         # Create an invalid HAR object (missing required fields)
@@ -322,44 +322,47 @@ class TestSchemaValidator:
                 # Missing required creator and entries fields
             }
         }
-        
+
         # Validate the object against the HAR schema
         is_valid, error = validate_schema_object(invalid_data, "har")
-        
+
         # Verify the results
         assert not is_valid
         assert error is not None
         assert "Validation error" in error
-        
+
     def test_validate_schema_object_unknown_schema(self):
         """Test validating an object against an unknown schema."""
         # Validate against a non-existent schema
         is_valid, error = validate_schema_object({}, "nonexistent_schema")
-        
+
         # Verify the results
         assert not is_valid
         assert error is not None
         assert "Unknown schema" in error
-        
+
     def test_validate_schema_object_timeout(self, sample_har_data, monkeypatch):
         """Test schema validation timeout."""
         # Mock time.time to simulate timeout
         import time
-        
+
         # Create a mock time function that returns increasing values
         # to simulate elapsed time exceeding the timeout
-        mock_times = [0, 31]  # First call returns 0, second call returns 31 (> 30s timeout)
+        mock_times = [
+            0,
+            31,
+        ]  # First call returns 0, second call returns 31 (> 30s timeout)
         mock_time_iter = iter(mock_times)
-        
+
         def mock_time():
             return next(mock_time_iter)
-        
+
         # Apply the mock
         monkeypatch.setattr(time, "time", mock_time)
-        
+
         # Validate with a very short timeout
         is_valid, error = validate_schema_object(sample_har_data, "har", timeout=30)
-        
+
         # Should fail due to timeout
         assert not is_valid
         assert error is not None

@@ -45,6 +45,7 @@ class PostmanToOpenApi3Converter(FormatConverter):
         """
         # Create a temporary file for the intermediate HAR format
         import tempfile
+
         with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as tmp_file:
             tmp_har_path = tmp_file.name
 
@@ -56,7 +57,7 @@ class PostmanToOpenApi3Converter(FormatConverter):
             # Step 2: Convert HAR to OpenAPI 3
             har_to_openapi3 = HarToOpenApi3Converter()
             openapi3 = har_to_openapi3.convert(tmp_har_path, target_path, **options)
-            
+
             # If target_path is specified, the file has already been written by har_to_openapi3.convert()
 
             return openapi3

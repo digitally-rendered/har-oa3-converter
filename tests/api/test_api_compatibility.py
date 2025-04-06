@@ -137,14 +137,14 @@ def test_api_convert_endpoint_with_har(client, sample_har_file):
         )
 
     assert response.status_code == 200
-    
+
     # Ensure we got a non-empty response
     assert len(response.content) > 0
-    
+
     try:
         # Try to parse as JSON
         result = response.json()
-        
+
         # Check the returned document is a valid OpenAPI 3.0 schema
         assert "openapi" in result
         assert result["openapi"].startswith("3.")
@@ -155,9 +155,10 @@ def test_api_convert_endpoint_with_har(client, sample_har_file):
         # If it's not JSON, try to parse as YAML
         try:
             import yaml
+
             yaml_result = yaml.safe_load(response.content)
             assert yaml_result is not None
-            
+
             # Check the returned document is a valid OpenAPI 3.0 schema
             assert "openapi" in yaml_result
             assert yaml_result["openapi"].startswith("3.")
@@ -236,14 +237,14 @@ def test_api_custom_options(client, sample_har_file):
         )
 
     assert response.status_code == 200
-    
+
     # Ensure we got a non-empty response
     assert len(response.content) > 0
-    
+
     try:
         # Try to parse as JSON
         result = response.json()
-        
+
         # Verify our custom options were applied
         assert result["info"]["title"] == custom_title
         assert result["info"]["version"] == custom_version
@@ -252,9 +253,10 @@ def test_api_custom_options(client, sample_har_file):
         # If it's not JSON, try to parse as YAML
         try:
             import yaml
+
             yaml_result = yaml.safe_load(response.content)
             assert yaml_result is not None
-            
+
             # Verify our custom options were applied
             assert yaml_result["info"]["title"] == custom_title
             assert yaml_result["info"]["version"] == custom_version

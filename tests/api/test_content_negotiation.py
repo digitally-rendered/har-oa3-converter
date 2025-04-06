@@ -175,7 +175,7 @@ class TestContentTypeNegotiation:
 
         # Ensure we got a non-empty response
         assert len(response.content) > 0
-        
+
         # Should have successfully processed despite unknown content type
         try:
             # Try to parse as JSON
@@ -231,7 +231,7 @@ class TestSchemaValidation:
         assert response.status_code == 200
         # Ensure we got a non-empty response
         assert len(response.content) > 0
-        
+
         try:
             # Try to parse as JSON
             data = response.json()

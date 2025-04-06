@@ -667,9 +667,11 @@ class PostmanToHarConverter(FormatConverter):
                 params.append(
                     {
                         "name": param.get("key", ""),
-                        "value": param.get("value", "")
-                        if param.get("type") == "text"
-                        else "<file>",
+                        "value": (
+                            param.get("value", "")
+                            if param.get("type") == "text"
+                            else "<file>"
+                        ),
                     }
                 )
 

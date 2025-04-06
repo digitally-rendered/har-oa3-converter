@@ -54,7 +54,7 @@ class OpenApi3ToSwaggerConverter(FormatConverter):
         # Write to target file if specified
         if target_path:
             os.makedirs(os.path.dirname(os.path.abspath(target_path)), exist_ok=True)
-            
+
             # Use FileHandler to save the file in the appropriate format
             file_handler.save(swagger, target_path)
 
@@ -87,19 +87,30 @@ class OpenApi3ToSwaggerConverter(FormatConverter):
             if server_url:
                 # Extract scheme, host, and basePath from server URL
                 import urllib.parse
+
                 parsed_url = urllib.parse.urlparse(server_url)
                 swagger["host"] = parsed_url.netloc
                 swagger["basePath"] = parsed_url.path or "/"
-                swagger["schemes"] = [parsed_url.scheme] if parsed_url.scheme else ["https"]
+                swagger["schemes"] = (
+                    [parsed_url.scheme] if parsed_url.scheme else ["https"]
+                )
 
         # Convert paths
         paths = openapi3.get("paths", {})
         for path, path_item in paths.items():
             swagger["paths"][path] = {}
-            
+
             # Process each HTTP method
             for method, operation in path_item.items():
-                if method in ["get", "post", "put", "delete", "options", "head", "patch"]:
+                if method in [
+                    "get",
+                    "post",
+                    "put",
+                    "delete",
+                    "options",
+                    "head",
+                    "patch",
+                ]:
                     # Convert operation
                     swagger_operation = {
                         "summary": operation.get("summary", ""),
@@ -109,7 +120,7 @@ class OpenApi3ToSwaggerConverter(FormatConverter):
                         "parameters": [],
                         "responses": {},
                     }
-                    
+
                     # Convert parameters
                     parameters = operation.get("parameters", [])
                     for param in parameters:
@@ -119,24 +130,26 @@ class OpenApi3ToSwaggerConverter(FormatConverter):
                             "description": param.get("description", ""),
                             "required": param.get("required", False),
                         }
-                        
+
                         # Convert schema to type, format
                         if "schema" in param:
                             schema = param["schema"]
                             if "$ref" in schema:
-                                swagger_param["schema"] = self._convert_schema_ref(schema)
+                                swagger_param["schema"] = self._convert_schema_ref(
+                                    schema
+                                )
                             else:
                                 swagger_param["type"] = schema.get("type", "string")
                                 if "format" in schema:
                                     swagger_param["format"] = schema["format"]
-                        
+
                         swagger_operation["parameters"].append(swagger_param)
-                    
+
                     # Convert requestBody to parameter
                     if "requestBody" in operation:
                         request_body = operation["requestBody"]
                         content = request_body.get("content", {})
-                        
+
                         # Handle application/json content type
                         if "application/json" in content:
                             json_content = content["application/json"]
@@ -145,27 +158,31 @@ class OpenApi3ToSwaggerConverter(FormatConverter):
                                     "name": "body",
                                     "in": "body",
                                     "required": request_body.get("required", False),
-                                    "schema": self._convert_schema(json_content["schema"]),
+                                    "schema": self._convert_schema(
+                                        json_content["schema"]
+                                    ),
                                 }
                                 swagger_operation["parameters"].append(body_param)
-                    
+
                     # Convert responses
                     responses = operation.get("responses", {})
                     for status_code, response in responses.items():
                         swagger_response = {
                             "description": response.get("description", ""),
                         }
-                        
+
                         # Convert response schema
                         if "content" in response:
                             content = response["content"]
                             if "application/json" in content:
                                 json_content = content["application/json"]
                                 if "schema" in json_content:
-                                    swagger_response["schema"] = self._convert_schema(json_content["schema"])
-                        
+                                    swagger_response["schema"] = self._convert_schema(
+                                        json_content["schema"]
+                                    )
+
                         swagger_operation["responses"][status_code] = swagger_response
-                    
+
                     # Add operation to path
                     swagger["paths"][path][method] = swagger_operation
 
@@ -205,31 +222,49 @@ class OpenApi3ToSwaggerConverter(FormatConverter):
         """
         if not schema:
             return {}
-            
+
         result = {}
-        
+
         # Handle $ref
         if "$ref" in schema:
             return self._convert_schema_ref(schema)
-        
+
         # Copy basic properties
-        for prop in ["type", "format", "title", "description", "default", "multipleOf", 
-                    "maximum", "exclusiveMaximum", "minimum", "exclusiveMinimum", 
-                    "maxLength", "minLength", "pattern", "maxItems", "minItems", 
-                    "uniqueItems", "maxProperties", "minProperties", "required", "enum"]:
+        for prop in [
+            "type",
+            "format",
+            "title",
+            "description",
+            "default",
+            "multipleOf",
+            "maximum",
+            "exclusiveMaximum",
+            "minimum",
+            "exclusiveMinimum",
+            "maxLength",
+            "minLength",
+            "pattern",
+            "maxItems",
+            "minItems",
+            "uniqueItems",
+            "maxProperties",
+            "minProperties",
+            "required",
+            "enum",
+        ]:
             if prop in schema:
                 result[prop] = schema[prop]
-        
+
         # Handle array items
         if "items" in schema and schema.get("type") == "array":
             result["items"] = self._convert_schema(schema["items"])
-        
+
         # Handle properties for objects
         if "properties" in schema and schema.get("type") == "object":
             result["properties"] = {}
             for prop_name, prop_schema in schema["properties"].items():
                 result["properties"][prop_name] = self._convert_schema(prop_schema)
-        
+
         # Handle allOf, oneOf, anyOf
         if "allOf" in schema:
             # In Swagger 2, we can use allOf
@@ -242,5 +277,5 @@ class OpenApi3ToSwaggerConverter(FormatConverter):
                 first_schema = schemas_list[0]
                 for prop_name, prop_value in self._convert_schema(first_schema).items():
                     result[prop_name] = prop_value
-        
+
         return result

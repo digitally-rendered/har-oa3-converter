@@ -8,7 +8,9 @@ from pathlib import Path
 import pytest
 
 from har_oa3_converter.converters.format_registry import convert_file
-from har_oa3_converter.converters.formats.hoppscotch_to_openapi3 import HoppscotchToOpenApi3Converter
+from har_oa3_converter.converters.formats.hoppscotch_to_openapi3 import (
+    HoppscotchToOpenApi3Converter,
+)
 
 
 @pytest.fixture
@@ -29,35 +31,25 @@ def sample_hoppscotch_collection():
                         "name": "Get User",
                         "method": "GET",
                         "params": [
-                            {
-                                "key": "include",
-                                "value": "details",
-                                "active": True
-                            }
+                            {"key": "include", "value": "details", "active": True}
                         ],
                         "headers": [
                             {
                                 "key": "Accept",
                                 "value": "application/json",
-                                "active": True
+                                "active": True,
                             }
                         ],
                         "auth": {
                             "authType": "bearer",
                             "authActive": True,
-                            "token": "{{token}}"
+                            "token": "{{token}}",
                         },
-                        "body": {
-                            "contentType": "",
-                            "body": ""
-                        }
+                        "body": {"contentType": "", "body": ""},
                     }
                 ],
-                "auth": {
-                    "authType": "inherit",
-                    "authActive": True
-                },
-                "headers": []
+                "auth": {"authType": "inherit", "authActive": True},
+                "headers": [],
             }
         ],
         "requests": [
@@ -68,34 +60,17 @@ def sample_hoppscotch_collection():
                 "method": "POST",
                 "params": [],
                 "headers": [
-                    {
-                        "key": "Content-Type",
-                        "value": "application/json",
-                        "active": True
-                    }
+                    {"key": "Content-Type", "value": "application/json", "active": True}
                 ],
-                "auth": {
-                    "authType": "none",
-                    "authActive": False
-                },
+                "auth": {"authType": "none", "authActive": False},
                 "body": {
                     "contentType": "application/json",
-                    "body": "{\n  \"username\": \"user1\",\n  \"password\": \"password123\"\n}"
-                }
+                    "body": '{\n  "username": "user1",\n  "password": "password123"\n}',
+                },
             }
         ],
-        "auth": {
-            "authType": "bearer",
-            "authActive": True,
-            "token": "{{token}}"
-        },
-        "headers": [
-            {
-                "key": "User-Agent",
-                "value": "Hoppscotch",
-                "active": True
-            }
-        ]
+        "auth": {"authType": "bearer", "authActive": True, "token": "{{token}}"},
+        "headers": [{"key": "User-Agent", "value": "Hoppscotch", "active": True}],
     }
 
 
@@ -109,8 +84,11 @@ def test_hoppscotch_to_openapi3_converter_init():
 def test_hoppscotch_to_openapi3_converter_convert(sample_hoppscotch_collection):
     """Test that the converter can convert a Hoppscotch collection to OpenAPI 3."""
     # Create temporary files for source and target
-    with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as source_file, \
-            tempfile.NamedTemporaryFile(suffix=".json", delete=False) as target_file:
+    with tempfile.NamedTemporaryFile(
+        suffix=".json", delete=False
+    ) as source_file, tempfile.NamedTemporaryFile(
+        suffix=".json", delete=False
+    ) as target_file:
         source_path = source_file.name
         target_path = target_file.name
 
@@ -163,8 +141,11 @@ def test_hoppscotch_to_openapi3_converter_convert(sample_hoppscotch_collection):
 def test_format_registry_integration():
     """Test that the converter is properly registered in the format registry."""
     # Create temporary files for source and target
-    with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as source_file, \
-            tempfile.NamedTemporaryFile(suffix=".json", delete=False) as target_file:
+    with tempfile.NamedTemporaryFile(
+        suffix=".json", delete=False
+    ) as source_file, tempfile.NamedTemporaryFile(
+        suffix=".json", delete=False
+    ) as target_file:
         source_path = source_file.name
         target_path = target_file.name
 
@@ -183,11 +164,11 @@ def test_format_registry_integration():
                     "params": [],
                     "headers": [],
                     "auth": {"authType": "none", "authActive": False},
-                    "body": {"contentType": "", "body": ""}
+                    "body": {"contentType": "", "body": ""},
                 }
             ],
             "auth": {"authType": "none", "authActive": False},
-            "headers": []
+            "headers": [],
         }
 
         with open(source_path, "w") as f:
@@ -198,7 +179,7 @@ def test_format_registry_integration():
             source_path,
             target_path,
             source_format="hoppscotch",
-            target_format="openapi3"
+            target_format="openapi3",
         )
 
         # Check that the result is a dictionary with OpenAPI 3 structure

@@ -94,9 +94,11 @@ def validate_file(file_path: str) -> Tuple[bool, Optional[str], Optional[str]]:
     # Validate against detected format schema
     is_valid, error = validate_format(data, format_name)
     return is_valid, format_name, error
-    
 
-def validate_schema_object(data: Dict[str, Any], schema_name: str, timeout: int = 30) -> Tuple[bool, Optional[str]]:
+
+def validate_schema_object(
+    data: Dict[str, Any], schema_name: str, timeout: int = 30
+) -> Tuple[bool, Optional[str]]:
     """Validate a data object against a JSON schema with timeout.
 
     Args:
@@ -106,7 +108,7 @@ def validate_schema_object(data: Dict[str, Any], schema_name: str, timeout: int 
 
     Returns:
         Tuple of (is_valid, error_message)
-        
+
     Raises:
         TimeoutError: If validation takes longer than the timeout
     """
@@ -114,18 +116,21 @@ def validate_schema_object(data: Dict[str, Any], schema_name: str, timeout: int 
     schema = get_schema(schema_name)
     if not schema:
         return False, f"Unknown schema: {schema_name}"
-    
+
     # Add a basic timeout check for complex validations
     # This is simplified; in a real application, you might use multiprocessing
     # or threading with a real timeout mechanism
     import time
+
     start_time = time.time()
-    
+
     try:
         validate(instance=data, schema=schema)
         elapsed = time.time() - start_time
         if elapsed > timeout:
-            raise TimeoutError(f"Schema validation took {elapsed:.2f}s, which exceeds the {timeout}s timeout")
+            raise TimeoutError(
+                f"Schema validation took {elapsed:.2f}s, which exceeds the {timeout}s timeout"
+            )
         return True, None
     except ValidationError as e:
         return False, f"Validation error: {e.message}"
