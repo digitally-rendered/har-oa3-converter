@@ -16,12 +16,11 @@ class ConversionFormat(str, Enum):
     _formats = get_available_formats()
     
     # Define enum values statically based on available formats
-    HAR = "har" if "har" in _formats else "har"
-    OPENAPI3 = "openapi3" if "openapi3" in _formats else "openapi3"
-    SWAGGER = "swagger" if "swagger" in _formats else "swagger"
-    POSTMAN = "postman" if "postman" in _formats else "postman"
-    HOPPSCOTCH = "hoppscotch" if "hoppscotch" in _formats else "hoppscotch"
-
+    HAR = "har"
+    OPENAPI3 = "openapi3"
+    SWAGGER = "swagger"
+    POSTMAN = "postman"
+    HOPPSCOTCH = "hoppscotch"
 
 class ConversionOptions(BaseModel):
     """Options for conversion API."""
