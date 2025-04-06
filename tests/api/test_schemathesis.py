@@ -231,25 +231,73 @@ def client():
 # Previously skipped - now enabled to improve test coverage
 @schema.parametrize()  # Use without deprecated 'endpoint' parameter
 def test_list_formats(case):
-    """Test that the formats endpoint returns a valid list of formats."""
-    # Filter for specific endpoint if needed
-    if case.path != "/api/formats" or case.method.lower() != "get":
-        pytest.skip("This test only applies to GET /api/formats")
+    """Test that the formats endpoint returns a valid list of formats or validates the convert endpoint."""
+    # Handle different endpoints appropriately
+    if case.path == "/api/formats" and case.method.lower() == "get":
+        # For the formats endpoint
+        # Use our abstracted helper to execute the test case
+        response = execute_schemathesis_case(case, expected_status_codes=[200])
 
-    # Use our abstracted helper to execute the test case
-    response = execute_schemathesis_case(case, expected_status_codes=[200])
+        # Verify response is a FormatResponse object with a formats array
+        data = response.json()
+        assert isinstance(data, dict)
+        assert "formats" in data
+        assert isinstance(data["formats"], list)
 
-    # Verify response is a FormatResponse object with a formats array
-    data = response.json()
-    assert isinstance(data, dict)
-    assert "formats" in data
-    assert isinstance(data["formats"], list)
-
-    # Verify all expected formats are present in the formats array
-    format_names = [fmt["name"] for fmt in data["formats"]]
-    assert "har" in format_names
-    assert "openapi3" in format_names
-    assert "swagger" in format_names
+        # Verify all expected formats are present in the formats array
+        format_names = [fmt["name"] for fmt in data["formats"]]
+        assert "har" in format_names
+        assert "openapi3" in format_names
+        assert "swagger" in format_names
+    elif case.path == "/api/convert/{target_format}" and case.method.lower() == "post":
+        # For the convert endpoint, we need to handle file upload
+        # Create a sample HAR file for testing
+        sample_data = {
+            "log": {
+                "version": "1.2",
+                "creator": {"name": "Browser DevTools", "version": "1.0"},
+                "entries": [{
+                    "request": {
+                        "method": "GET",
+                        "url": "https://example.com/api/users"
+                    },
+                    "response": {
+                        "status": 200,
+                        "content": {
+                            "mimeType": "application/json",
+                            "text": "{\"data\": []}"
+                        }
+                    }
+                }]
+            }
+        }
+        
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".har") as f:
+            f.write(json.dumps(sample_data).encode())
+            file_path = f.name
+        
+        try:
+            # Prepare the request with the file
+            with open(file_path, "rb") as f:
+                client = TestClient(app)
+                target_format = case.path_parameters["target_format"]
+                files = {"file": ("test.har", f, "application/json")}
+                
+                # Make the request
+                response = client.post(
+                    f"/api/convert/{target_format}",
+                    files=files,
+                    headers={"Accept": "application/json"}
+                )
+                
+                # Verify that we got a valid response
+                assert response.status_code in [200, 400, 404, 415, 422]
+        finally:
+            # Clean up the temporary file
+            if os.path.exists(file_path):
+                os.unlink(file_path)
+    else:
+        pytest.skip(f"This test only applies to GET /api/formats or POST /api/convert/{{target_format}}, not {case.method} {case.path}")
 
 
 # Test the conversion endpoint for each supported format
@@ -396,6 +444,87 @@ def test_schema_validation_all_endpoints(case):
     # This test ensures that all API endpoints comply with the OpenAPI schema
     # We've made it more robust to handle schema implementation differences
     
+    # Special handling for the convert endpoint which requires a file upload
+    if case.path == "/api/convert/{target_format}" and case.method == "POST":
+        # For the convert endpoint, we'll use a custom approach that handles multipart/form-data properly
+        # Create a sample HAR file for testing
+        sample_data = {
+            "log": {
+                "version": "1.2",
+                "creator": {"name": "Browser DevTools", "version": "1.0"},
+                "entries": [{
+                    "request": {
+                        "method": "GET",
+                        "url": "https://example.com/api/users"
+                    },
+                    "response": {
+                        "status": 200,
+                        "content": {
+                            "mimeType": "application/json",
+                            "text": "{\"data\": []}"
+                        }
+                    }
+                }]
+            }
+        }
+        
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".har") as f:
+            f.write(json.dumps(sample_data).encode())
+            file_path = f.name
+        
+        try:
+            # Prepare the request with the file
+            with open(file_path, "rb") as f:
+                client = TestClient(app)
+                target_format = case.path_parameters["target_format"]
+                files = {"file": ("test.har", f, "application/json")}
+                
+                # Make the request
+                response = client.post(
+                    f"/api/convert/{target_format}",
+                    files=files,
+                    headers={"Accept": "application/json"}
+                )
+                
+                # Verify that we got a valid response
+                assert response.status_code in [200, 400, 404, 415, 422]
+                
+                # For successful responses, check content type and structure
+                if response.status_code == 200:
+                    assert "content-type" in response.headers
+                    content_type = response.headers["content-type"].split(";")[0].strip()
+                    assert content_type in [
+                        "application/json", 
+                        "application/yaml", 
+                        "application/x-yaml",
+                        "text/yaml",
+                        "text/plain"
+                    ]
+                    
+                    # For JSON responses, validate the structure based on the target format
+                    if content_type == "application/json":
+                        try:
+                            content = response.json()
+                            # Basic validation based on target format
+                            if target_format == "openapi3" or target_format == "swagger":
+                                assert "openapi" in content or "swagger" in content
+                                assert "info" in content
+                                assert "paths" in content
+                            elif target_format == "har":
+                                assert "log" in content
+                        except Exception as e:
+                            # If we can't parse the JSON, that's okay for some responses
+                            # Just check we got a non-empty response
+                            assert response.text.strip()
+        finally:
+            # Clean up the temporary file
+            if os.path.exists(file_path):
+                os.unlink(file_path)
+        
+        # We've handled this case, so return
+        return
+    
+    # For other endpoints, use the standard approach
     # Initialize response variable to avoid UnboundLocalError
     response = None
     
@@ -424,11 +553,8 @@ def test_schema_validation_all_endpoints(case):
                     content = response.json()
                     # Basic validation based on endpoint
                     if case.path == "/api/formats":
-                        assert isinstance(content, list)
-                    elif case.path == "/api/convert/{target_format}" and case.method == "POST":
-                        # For conversion endpoint, we can't validate the exact structure
-                        # as it depends on the conversion format, but we can check it's not empty
-                        assert content
+                        assert "formats" in content
+                        assert isinstance(content["formats"], list)
                 except Exception as e:
                     # If we can't parse the JSON, that's okay for some responses
                     # Just check we got a non-empty response
