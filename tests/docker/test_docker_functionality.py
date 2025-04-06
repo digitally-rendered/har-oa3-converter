@@ -20,9 +20,9 @@ from tests.docker.docker_utils import (
 def run_docker_command(command, volumes=None):
     """Run a command in the Docker container."""
     cmd = ["docker", "run", "--rm"]
-    
+
     # Run as root in CI environments to avoid permission issues
-    if os.environ.get('CI') == 'true' or os.environ.get('GITHUB_ACTIONS') == 'true':
+    if os.environ.get("CI") == "true" or os.environ.get("GITHUB_ACTIONS") == "true":
         cmd.append("--user=root")
 
     # Add volume mappings
@@ -166,15 +166,15 @@ def sample_har_file():
 
     # Create a temp directory with appropriate permissions
     temp_dir = tempfile.mkdtemp()
-    if os.environ.get('CI') == 'true' or os.environ.get('GITHUB_ACTIONS') == 'true':
+    if os.environ.get("CI") == "true" or os.environ.get("GITHUB_ACTIONS") == "true":
         # Ensure directory has appropriate permissions in CI
         os.chmod(temp_dir, 0o777)
-    
+
     # Create the HAR file in the temp directory
     file_path = os.path.join(temp_dir, "sample.har")
     with open(file_path, "w") as f:
         json.dump(sample_har, f)
-    
+
     # Ensure the file has appropriate permissions
     os.chmod(file_path, 0o666)  # rw for all users
 
