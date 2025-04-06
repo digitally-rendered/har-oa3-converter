@@ -1,4 +1,6 @@
-FROM python:3.11-slim
+# Accept Python version as a build argument with 3.11 as default
+ARG PYTHON_VERSION=3.11
+FROM python:${PYTHON_VERSION}-slim
 
 WORKDIR /app
 

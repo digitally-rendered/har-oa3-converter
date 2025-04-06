@@ -41,11 +41,31 @@ class DockerAPIContainer:
 
     def __init__(
         self,
-        image_name: str = "har-oa3-converter:latest",
+        image_name: str = None,
         host: str = "127.0.0.1",
         port: int = 0,  # Use 0 to get a dynamic port
     ):
-        self.image_name = image_name
+        # Use Python version-specific Docker image if available
+        if image_name is None:
+            # Get Python version and format it for Docker tag
+            import sys
+            python_version = sys.version.split()[0]  # e.g., '3.10.4'
+            major_minor = '.'.join(python_version.split('.')[:2])  # e.g., '3.10'
+            docker_tag = major_minor.replace('.', '_')  # e.g., '3_10'
+            
+            # Try version-specific image first, fall back to latest
+            self.image_name = f"har-oa3-converter:py{docker_tag}"
+            
+            # Check if the image exists, otherwise fall back to latest
+            try:
+                cmd = ["docker", "image", "inspect", self.image_name]
+                subprocess.run(cmd, capture_output=True, check=True)
+                print(f"Using Python {major_minor} specific Docker image: {self.image_name}")
+            except subprocess.CalledProcessError:
+                self.image_name = "har-oa3-converter:latest"
+                print(f"Python {major_minor} specific Docker image not found, using: {self.image_name}")
+        else:
+            self.image_name = image_name
         # Generate a unique container name to avoid conflicts
         self.container_name = generate_random_container_name(prefix="har-oa3-api")
         self.host = host
@@ -201,6 +221,22 @@ class DockerAPIContainer:
 @pytest.fixture
 def api_container() -> Generator[DockerAPIContainer, None, None]:
     """Fixture to provide a running Docker API container."""
+    # Build the Docker image in CI environments
+    if os.environ.get('CI') == 'true' or os.environ.get('GITHUB_ACTIONS') == 'true':
+        print("Building Docker image for CI environment...")
+        try:
+            # Get the project root directory
+            project_root = Path(__file__).parent.parent.parent.absolute()
+            build_cmd = [
+                "docker", "build", "-t", "har-oa3-converter:latest",
+                str(project_root)
+            ]
+            subprocess.run(build_cmd, check=True, capture_output=True, text=True)
+            print("Docker image built successfully")
+        except subprocess.CalledProcessError as e:
+            pytest.skip(f"Failed to build Docker image: {e.stderr}")
+            return
+    
     with DockerAPIContainer() as container:
         yield container
 
