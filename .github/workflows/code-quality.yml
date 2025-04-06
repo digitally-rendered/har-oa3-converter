@@ -1,0 +1,73 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main, poetry-setup ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', 3.13]  # Test with stable and latest Python
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+    
+    - name: Install dependencies
+      run: |
+        poetry install
+    
+    - name: Check formatting with black
+      run: |
+        poetry run black --check .
+    
+    - name: Lint with pylint
+      run: |
+        poetry run pylint har_oa3_converter tests
+      continue-on-error: true  # Don't fail the build on lint errors initially
+    
+    - name: Generate pylint report
+      if: always()
+      run: |
+        poetry run pylint har_oa3_converter tests --output-format=text:pylint-report.txt,json:pylint-report.json
+      continue-on-error: true
+    
+    - name: Upload lint reports as artifacts
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: lint-reports-${{ matrix.python-version }}
+        path: |
+          pylint-report.txt
+          pylint-report.json
+
+    - name: Lint Summary
+      if: always()
+      run: |
+        echo "## Python ${{ matrix.python-version }} Lint Results" >> $GITHUB_STEP_SUMMARY
+        if [ -f pylint-report.txt ]; then
+          SCORE=$(grep "Your code has been rated at" pylint-report.txt | grep -o "[0-9.]\+/10")
+          echo "- Pylint Score: $SCORE" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "- Pylint report not available" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        if [ "${{ job.status }}" == "success" ]; then
+          echo "✅ All quality checks passed" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "⚠️ Some quality checks failed" >> $GITHUB_STEP_SUMMARY
+        fi

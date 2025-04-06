@@ -1,0 +1,70 @@
+name: Python Tests
+
+on:
+  push:
+    branches: [ main, poetry-setup ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8, 3.9, '3.10', 3.11, 3.12, 3.13]
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+    
+    - name: Install dependencies
+      run: |
+        poetry install
+    
+    - name: Run tests with pytest and coverage
+      id: tests
+      run: |
+        poetry run pytest --cov=har_oa3_converter --cov-report=xml --cov-report=term --html=pytest-report.html --json-report --json-report-file=pytest-report.json -v
+        echo "test_result=success" >> $GITHUB_OUTPUT
+      continue-on-error: true
+
+    - name: Test Summary
+      run: |
+        echo "## Python ${{ matrix.python-version }} Test Results" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ steps.tests.outputs.test_result }}" == "success" ]; then
+          echo "✅ All tests passed" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ Some tests failed" >> $GITHUB_STEP_SUMMARY
+          exit 1
+        fi
+        
+        # Add coverage summary
+        echo "\n### Coverage Report" >> $GITHUB_STEP_SUMMARY
+        COVERAGE=$(cat coverage.xml | grep -o 'line-rate="[0-9.]\+"' | head -1 | cut -d"" -f2)
+        COVERAGE_PCT=$(echo "$COVERAGE * 100" | bc -l | xargs printf "%.2f")
+        echo "- Line Coverage: $COVERAGE_PCT%" >> $GITHUB_STEP_SUMMARY
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        fail_ci_if_error: false
+    
+    - name: Upload test reports as artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-reports-${{ matrix.python-version }}
+        path: |
+          pytest-report.html
+          pytest-report.json
+          coverage.xml
