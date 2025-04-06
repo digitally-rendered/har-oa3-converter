@@ -2,7 +2,7 @@
 
 import json
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from har_oa3_converter.converters.formats.base import FormatConverter
 from har_oa3_converter.utils.file_handler import FileHandler
@@ -447,7 +447,7 @@ class HoppscotchToOpenApi3Converter(FormatConverter):
         # Add operation to path
         openapi3["paths"][path][method] = operation
 
-    def _extract_path_params(self, url: str) -> tuple[str, List[str]]:
+    def _extract_path_params(self, url: str) -> Tuple[str, List[str]]:
         """Extract path parameters from URL.
 
         Args:
