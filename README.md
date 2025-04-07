@@ -3,6 +3,7 @@
 [![Python Tests](https://github.com/digitally-rendered/har-oa3-converter/actions/workflows/python-tests.yml/badge.svg)](https://github.com/digitally-rendered/har-oa3-converter/actions/workflows/python-tests.yml)
 [![Code Quality](https://github.com/digitally-rendered/har-oa3-converter/actions/workflows/code-quality.yml/badge.svg)](https://github.com/digitally-rendered/har-oa3-converter/actions/workflows/code-quality.yml)
 [![codecov](https://codecov.io/gh/digitally-rendered/har-oa3-converter/branch/main/graph/badge.svg)](https://codecov.io/gh/digitally-rendered/har-oa3-converter)
+[![Coverage](https://raw.githubusercontent.com/digitally-rendered/har-oa3-converter/main/badges/coverage.svg)](https://github.com/digitally-rendered/har-oa3-converter/actions/workflows/python-tests.yml)
 [![Python Versions](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue)](https://github.com/digitally-rendered/har-oa3-converter/actions/workflows/python-compatibility.yml)
 
 Convert HAR (HTTP Archive) files to OpenAPI 3 specifications with comprehensive schema validation and multiple format support.
