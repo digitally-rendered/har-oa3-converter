@@ -34,54 +34,39 @@ jobs:
     - name: Run basic import test
       id: import_test
       run: |
-        # Ensure we set a default value
-        echo "test_result=failure" >> $GITHUB_OUTPUT
         # Try to import the module
-        if poetry run python -c "import har_oa3_converter, sys; print(f'Successfully imported har_oa3_converter with Python {sys.version}')" ; then
-          echo "test_result=success" >> $GITHUB_OUTPUT
-        fi
+        poetry run python -c "import har_oa3_converter, sys; print(f'Successfully imported har_oa3_converter with Python {sys.version}')"
+        echo "test_result=success" >> $GITHUB_OUTPUT
       continue-on-error: true
 
     - name: Run minimal functionality test
       id: minimal_test
+      if: steps.import_test.outputs.test_result == 'success'
       run: |
-        # Only run if import test succeeded
-        if [ "${{ steps.import_test.outputs.test_result }}" == "success" ]; then
-          # Create a simple test file
-          echo '{"log":{"version":"1.2","entries":[]}}' > minimal.har
-          # Try to convert it
-          poetry run har2oa3 minimal.har -o minimal.yaml
-          echo "test_result=success" >> $GITHUB_OUTPUT
-        else
-          echo "test_result=failure" >> $GITHUB_OUTPUT
-        fi
+        # Create a simple test file
+        echo '{"log":{"version":"1.2","entries":[]}}' > minimal.har
+        # Try to convert it
+        poetry run har2oa3 minimal.har -o minimal.yaml
+        echo "test_result=success" >> $GITHUB_OUTPUT
       continue-on-error: true
 
     - name: Test Summary
       run: |
         echo "## Python ${{ matrix.python-version }} Compatibility" >> $GITHUB_STEP_SUMMARY
 
-        # Get results from previous steps
-        IMPORT_RESULT="${{ steps.import_test.outputs.test_result }}"
-        MINIMAL_RESULT="${{ steps.minimal_test.outputs.test_result }}"
-
-        # Default to failure if outputs are empty
-        if [ -z "$IMPORT_RESULT" ]; then IMPORT_RESULT="failure"; fi
-        if [ -z "$MINIMAL_RESULT" ]; then MINIMAL_RESULT="failure"; fi
-
-        if [ "$IMPORT_RESULT" == "success" ]; then
+        if [ "${{ steps.import_test.outputs.test_result }}" == "success" ]; then
           echo "✅ Import test passed" >> $GITHUB_STEP_SUMMARY
         else
           echo "❌ Import test failed" >> $GITHUB_STEP_SUMMARY
         fi
 
-        if [ "$MINIMAL_RESULT" == "success" ]; then
+        if [ "${{ steps.minimal_test.outputs.test_result }}" == "success" ]; then
           echo "✅ Minimal functionality test passed" >> $GITHUB_STEP_SUMMARY
         else
           echo "❌ Minimal functionality test failed" >> $GITHUB_STEP_SUMMARY
         fi
 
-        if [ "$IMPORT_RESULT" == "success" ] && [ "$MINIMAL_RESULT" == "success" ]; then
+        if [ "${{ steps.import_test.outputs.test_result }}" == "success" ] && [ "${{ steps.minimal_test.outputs.test_result }}" == "success" ]; then
           echo "### ✅ Python ${{ matrix.python-version }} is fully compatible" >> $GITHUB_STEP_SUMMARY
         else
           echo "### ❌ Python ${{ matrix.python-version }} has compatibility issues" >> $GITHUB_STEP_SUMMARY
