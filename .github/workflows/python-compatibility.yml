@@ -106,7 +106,9 @@ jobs:
         from shield_badge_maker import make_badge
         
         # Load the workflow file to get the matrix values
-        with open('.github/workflows/python-compatibility.yml', 'r') as f:
+        import os
+        workflow_file_path = os.getenv('WORKFLOW_FILE_PATH')
+        with open(workflow_file_path, 'r') as f:
             workflow = yaml.safe_load(f)
             
         # Extract Python versions from matrix
