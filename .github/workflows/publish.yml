@@ -1,0 +1,84 @@
+name: Publish to PyPI
+
+on:
+  release:
+    types: [created]
+  # Allow manual triggering
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (leave empty to use version in pyproject.toml)'
+        required: false
+        default: ''
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install Poetry
+      run: |
+        pipx install poetry==1.7.1
+        poetry --version
+
+    - name: Update version if specified
+      if: github.event.inputs.version != ''
+      run: |
+        poetry version ${{ github.event.inputs.version }}
+        echo "Updated version to ${{ github.event.inputs.version }}"
+
+    - name: Install dependencies
+      run: |
+        poetry install
+
+    - name: Run tests
+      run: |
+        poetry run pytest
+
+    - name: Check code quality
+      run: |
+        poetry run black --check .
+        poetry run pylint har_oa3_converter
+
+    - name: Build package
+      run: |
+        poetry build
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: dist
+        path: dist/
+
+    - name: Publish to Test PyPI
+      env:
+        TEST_PYPI_TOKEN: ${{ secrets.TEST_PYPI_TOKEN }}
+      if: env.TEST_PYPI_TOKEN != ''
+      run: |
+        poetry config repositories.testpypi https://test.pypi.org/legacy/
+        poetry config pypi-token.testpypi ${{ secrets.TEST_PYPI_TOKEN }}
+        poetry publish -r testpypi
+
+    - name: Publish to PyPI
+      env:
+        PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+      if: env.PYPI_TOKEN != ''
+      run: |
+        poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
+        poetry publish
+
+    - name: Generate coverage report
+      run: |
+        poetry run pytest --cov=har_oa3_converter --cov-report=xml:coverage.xml --cov-report=html:reports/coverage
+
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: reports/coverage/
