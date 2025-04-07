@@ -1,0 +1,237 @@
+name: Build and Deploy Docs
+on:
+  # Run on pushes to main that affect docs or code
+  push:
+    branches: [ main ]
+    paths:
+      - 'har_oa3_converter/**'
+      - 'docs/**'
+      - '.github/workflows/docs.yml'
+      - 'pyproject.toml'
+  # Run when PRs are merged that affect docs or code
+  pull_request:
+    types: [closed]
+    branches: [ main ]
+    paths:
+      - 'har_oa3_converter/**'
+      - 'docs/**'
+      - '.github/workflows/docs.yml'
+      - 'pyproject.toml'
+  # Allow manual triggering
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for manual build'
+        required: false
+        default: 'Manual documentation update'
+  # Schedule daily builds to ensure docs stay current
+  schedule:
+    - cron: '0 0 * * *'  # Run at midnight UTC every day
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Install Poetry
+      run: |
+        pipx install poetry==1.7.1
+        poetry --version
+
+    - name: Install dependencies
+      run: |
+        poetry install
+
+    - name: Run tests with coverage
+      run: |
+        poetry run pytest --cov=har_oa3_converter --cov-report=xml --cov-report=html --cov-report=term --json-report --json-report-file=pytest-report.json --cov-branch -v
+
+    - name: Store test results
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: |
+          coverage.xml
+          htmlcov/
+          pytest-report.json
+          .coverage
+
+    - name: Verify coverage meets target
+      run: |
+        COVERAGE=$(poetry run coverage report | grep TOTAL | awk '{print $NF}' | sed 's/%//')
+        echo "Current coverage: $COVERAGE%"
+        if (( $(echo "$COVERAGE < 100" | bc -l) )); then
+          echo "::warning::Coverage is below 100% target: $COVERAGE%"
+        fi
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Install Poetry
+      run: |
+        pipx install poetry==1.7.1
+        poetry --version
+
+    - name: Install dependencies
+      run: |
+        poetry install
+
+    - name: Download test results
+      uses: actions/download-artifact@v4
+      with:
+        name: test-results
+        path: test-results
+
+    - name: Generate coverage badge
+      run: |
+        COVERAGE=$(cat test-results/.coverage | grep -o "TOTAL.*" | awk '{print $NF}' | sed 's/%//')
+        mkdir -p badges
+        cat > badges/coverage.svg << 'EOL'
+        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="96" height="20">
+        <linearGradient id="b" x2="0" y2="100%">
+        <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
+        <stop offset="1" stop-opacity=".1"/>
+        </linearGradient>
+        <clipPath id="a">
+        <rect width="96" height="20" rx="3" fill="#fff"/>
+        </clipPath>
+        <g clip-path="url(#a)">
+        <path fill="#555" d="M0 0h61v20H0z"/>
+        <path fill="#4c1" d="M61 0h35v20H61z"/>
+        <path fill="url(#b)" d="M0 0h96v20H0z"/>
+        </g>
+        <g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="11">
+        <text x="30.5" y="15" fill="#010101" fill-opacity=".3">coverage</text>
+        <text x="30.5" y="14">coverage</text>
+        <text x="78.5" y="15" fill="#010101" fill-opacity=".3">$COVERAGE%</text>
+        <text x="78.5" y="14">$COVERAGE%</text>
+        </g>
+        </svg>
+        EOL
+        sed -i "s/\$COVERAGE/${COVERAGE}/g" badges/coverage.svg
+
+    - name: Build documentation
+      run: |
+        mkdir -p docs/build/html
+        cd docs
+        poetry run sphinx-build -b html source build/html
+        # Add test coverage report to docs
+        cp -r ../test-results/htmlcov ../docs/build/html/coverage
+        # Create redirect to coverage report
+        cat > ../docs/build/html/coverage.html << 'EOL'
+        <!DOCTYPE html>
+        <html>
+        <head>
+        <meta http-equiv="refresh" content="0; url=coverage/index.html" />
+        </head>
+        <body>
+        Redirecting to <a href="coverage/index.html">coverage report</a>
+        </body>
+        </html>
+        EOL
+
+    - name: Upload documentation artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: docs-html
+        path: docs/build/html/
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    # Only deploy on main branch pushes or when PR is merged to main
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true))
+    permissions:
+      contents: write
+      pages: write
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Download documentation artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: docs-html
+        path: docs-build
+
+    - name: Download test results for badge
+      uses: actions/download-artifact@v4
+      with:
+        name: test-results
+        path: test-results
+
+    - name: Setup Git identity
+      run: |
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git config --global user.name "github-actions[bot]"
+
+    # Create/update badges directory in main branch
+    - name: Update badges in main branch
+      run: |
+        mkdir -p badges
+        # Generate the coverage badge if it doesn't exist in the artifact
+        if [ ! -f "badges/coverage.svg" ]; then
+          COVERAGE=$(cat test-results/.coverage | grep -o "TOTAL.*" | awk '{print $NF}' | sed 's/%//')
+          cat > badges/coverage.svg << 'EOL'
+          <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="96" height="20">
+          <linearGradient id="b" x2="0" y2="100%">
+          <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
+          <stop offset="1" stop-opacity=".1"/>
+          </linearGradient>
+          <clipPath id="a">
+          <rect width="96" height="20" rx="3" fill="#fff"/>
+          </clipPath>
+          <g clip-path="url(#a)">
+          <path fill="#555" d="M0 0h61v20H0z"/>
+          <path fill="#4c1" d="M61 0h35v20H61z"/>
+          <path fill="url(#b)" d="M0 0h96v20H0z"/>
+          </g>
+          <g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="11">
+          <text x="30.5" y="15" fill="#010101" fill-opacity=".3">coverage</text>
+          <text x="30.5" y="14">coverage</text>
+          <text x="78.5" y="15" fill="#010101" fill-opacity=".3">$COVERAGE%</text>
+          <text x="78.5" y="14">$COVERAGE%</text>
+          </g>
+          </svg>
+          EOL
+          sed -i "s/\$COVERAGE/${COVERAGE}/g" badges/coverage.svg
+        fi
+        git add badges/
+        git commit -m "Update documentation badges [skip ci]" || echo "No changes to commit"
+        git push origin HEAD:main || echo "No changes to push"
+
+    - name: Deploy to GitHub Pages
+      uses: JamesIves/github-pages-deploy-action@v4
+      with:
+        folder: docs-build
+        branch: gh-pages
+        commit-message: "Deploy documentation with coverage reports [skip ci]"
+        # Clean GitHub Pages branch on each deploy
+        clean: true
+
+    - name: Document deployment status
+      if: always()
+      run: |
+        if [ $? -eq 0 ]; then
+          echo "Documentation successfully deployed to GitHub Pages."
+          echo "View at: https://digitally-rendered.github.io/har-oa3-converter/"
+        else
+          echo "::error::Documentation deployment failed."
+        fi
