@@ -2,9 +2,9 @@
 name = "har-oa3-converter"
 version = "0.1.0"
 description = "Convert HAR (HTTP Archive) files to OpenAPI 3 specification"
-authors = ["Your Name <your.email@example.com>"]
+authors = ["digitally-rendered <contact@digitally-rendered.com>"]
 readme = "README.md"
-repository = "https://github.com/yourusername/har-oa3-converter"
+repository = "https://github.com/digitally-rendered/har-oa3-converter"
 license = "MIT"
 packages = [{include = "har_oa3_converter"}]
 classifiers = [
@@ -26,6 +26,13 @@ fastapi = "^0.110.0"
 uvicorn = {extras = ["standard"], version = "^0.27.0"}
 python-multipart = "^0.0.9"
 httpx = "^0.28.1"
+
+# Observability dependencies
+opentelemetry-api = "^1.23.0"
+opentelemetry-sdk = "^1.23.0"
+opentelemetry-exporter-otlp = "^1.23.0"
+opentelemetry-instrumentation-fastapi = "^0.45b0"
+prometheus-client = "^0.20.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.3.1"

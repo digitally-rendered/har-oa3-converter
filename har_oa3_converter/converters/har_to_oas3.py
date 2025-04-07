@@ -1,7 +1,13 @@
 """Core converter module for transforming HAR files to OpenAPI 3."""
 
 import json
+import os
 from typing import Any, Dict, List, Optional, Set, Tuple
+
+from har_oa3_converter.utils import get_logger
+
+# Get logger for this module
+logger = get_logger(__name__)
 
 
 class HarToOas3Converter:
@@ -530,23 +536,23 @@ class HarToOas3Converter:
         Returns:
             Generated OpenAPI 3 specification
         """
-        print(f"DEBUG: Converting HAR file: {har_path} to OpenAPI 3")
-        print(f"DEBUG: Output path: {output_path}")
+        logger.debug(f"Converting HAR file: {har_path} to OpenAPI 3")
+        logger.debug(f"Output path: {output_path}")
 
         try:
             har_data = self.load_har(har_path)
-            print(f"DEBUG: Successfully loaded HAR file")
+            logger.debug("Successfully loaded HAR file")
 
             # Extract information from HAR file
             self.extract_paths_from_har(har_data)
             spec = self.generate_spec()
-            print(
-                f"DEBUG: Successfully generated OpenAPI 3 spec with {len(self.paths)} paths"
+            logger.debug(
+                f"Successfully generated OpenAPI 3 spec with {len(self.paths)} paths"
             )
 
             # Save to file if output path is provided
             if output_path:
-                print(f"DEBUG: Writing output to: {output_path}")
+                logger.debug(f"Writing output to: {output_path}")
 
                 # Create parent directory if it doesn't exist
                 import os
@@ -560,12 +566,12 @@ class HarToOas3Converter:
 
                 with open(output_path, "w", encoding="utf-8") as f:
                     if is_yaml:
-                        print("DEBUG: Writing in YAML format")
+                        logger.debug("Writing in YAML format")
                         import yaml
 
                         yaml.dump(spec, f, default_flow_style=False, sort_keys=False)
                     else:
-                        print("DEBUG: Writing in JSON format")
+                        logger.debug("Writing in JSON format")
                         json.dump(spec, f, indent=2)
 
                     # Ensure file is flushed to disk
@@ -574,15 +580,15 @@ class HarToOas3Converter:
                 # Verify file was written
                 if os.path.exists(output_path):
                     file_size = os.path.getsize(output_path)
-                    print(f"DEBUG: Output file created, size: {file_size} bytes")
+                    logger.debug(f"Output file created, size: {file_size} bytes")
                     if file_size == 0:
-                        print("WARNING: Output file is empty!")
+                        logger.warning("Output file is empty!")
                 else:
-                    print(f"ERROR: Failed to create output file: {output_path}")
+                    logger.error(f"Failed to create output file: {output_path}")
 
             return spec
 
         except Exception as e:
-            print(f"ERROR: Failed to convert HAR file: {str(e)}")
+            logger.error(f"Failed to convert HAR file: {str(e)}")
             # Re-raise to maintain original behavior
             raise

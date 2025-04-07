@@ -15,6 +15,19 @@ from har_oa3_converter.converters.format_registry import (
     get_available_formats,
     get_converter_for_formats,
 )
+from har_oa3_converter.utils import (
+    active_conversions,
+    api_requests,
+    conversion_counter,
+    conversion_duration,
+    conversion_metrics,
+    get_logger,
+    timed,
+    traced,
+)
+
+# Get a logger for this module
+logger = get_logger(__name__)
 
 
 def parse_args(args: Optional[List[str]] = None) -> argparse.Namespace:
@@ -108,6 +121,7 @@ def parse_args(args: Optional[List[str]] = None) -> argparse.Namespace:
     return parser.parse_args(args)
 
 
+@traced(span_name="format_cli_main")
 def main(args: Optional[List[str]] = None) -> int:
     """Main entry point for the CLI.
 
@@ -117,30 +131,30 @@ def main(args: Optional[List[str]] = None) -> int:
     Returns:
         Exit code
     """
+    # Get tracer for this operation
     parsed_args = parse_args(args)
 
     # Handle listing available formats
     if parsed_args.list_formats:
         # Get available formats
         formats = get_available_formats()
-        print("Available formats:")
+        logger.info("Available formats:")
         for fmt in formats:
-            print(f"  - {fmt}")
+            logger.info(f"  - {fmt}")
 
         # List available conversions
-        print("\nAvailable conversions:")
+        logger.info("\nAvailable conversions:")
         for source_format in formats:
             for target_format in formats:
                 converter = get_converter_for_formats(source_format, target_format)
                 if converter:
-                    print(f"  - {source_format} → {target_format}")
+                    logger.info(f"  - {source_format} → {target_format}")
         return 0
 
     # If we're not listing formats, input and output are required
     if not parsed_args.input or not parsed_args.output:
-        print(
-            "Error: Both input and output files are required unless using --list-formats",
-            file=sys.stderr,
+        logger.error(
+            "Both input and output files are required unless using --list-formats"
         )
         return 1
 
@@ -149,7 +163,7 @@ def main(args: Optional[List[str]] = None) -> int:
 
     # Check if input file exists
     if not Path(input_path).exists():
-        print(f"Error: Input file '{input_path}' does not exist", file=sys.stderr)
+        logger.error(f"Input file '{input_path}' does not exist")
         return 1
 
     # Parse format arguments
@@ -162,11 +176,10 @@ def main(args: Optional[List[str]] = None) -> int:
         if source_format_guess:
             source_format = source_format_guess
         if source_format:
-            print(f"Detected source format: {source_format}")
+            logger.info(f"Detected source format: {source_format}")
         else:
-            print(
-                f"Error: Could not detect source format for '{input_path}'. Please specify with --from-format",
-                file=sys.stderr,
+            logger.error(
+                f"Could not detect source format for '{input_path}'. Please specify with --from-format"
             )
             return 1
 
@@ -178,22 +191,18 @@ def main(args: Optional[List[str]] = None) -> int:
         if target_format_guess:
             target_format = target_format_guess
         if target_format:
-            print(f"Detected target format: {target_format}")
+            logger.info(f"Detected target format: {target_format}")
         else:
-            print(
-                f"Error: Could not detect target format for '{output_path}'. Please specify with --to-format",
-                file=sys.stderr,
+            logger.error(
+                f"Could not detect target format for '{output_path}'. Please specify with --to-format"
             )
             return 1
 
     # Check if conversion is available
     converter = get_converter_for_formats(source_format, target_format)
     if not converter:
-        print(
-            f"Error: No converter available for {source_format} to {target_format}",
-            file=sys.stderr,
-        )
-        print("Use --list-formats to see available conversions", file=sys.stderr)
+        logger.error(f"No converter available for {source_format} to {target_format}")
+        logger.error("Use --list-formats to see available conversions")
         return 1
 
     # Create options dict from arguments
@@ -208,13 +217,36 @@ def main(args: Optional[List[str]] = None) -> int:
 
     # Perform conversion
     try:
-        print(f"Converting {source_format} to {target_format}...")
-        convert_file(input_path, output_path, source_format, target_format, **options)
-        print(f"Conversion successful: {output_path}")
+        logger.info(f"Converting {source_format} to {target_format}...")
+        # Increment active conversion gauge
+        active_conversions.inc()
+
+        # Record metrics for this conversion
+        with conversion_duration.labels(
+            source_format=source_format, target_format=target_format
+        ).time():
+            convert_file(
+                input_path, output_path, source_format, target_format, **options
+            )
+
+        # Record successful conversion
+        conversion_counter.labels(
+            source_format=source_format, target_format=target_format, status="success"
+        ).inc()
+
+        logger.info(f"Conversion successful: {output_path}")
         return 0
     except Exception as e:
-        print(f"Error during conversion: {str(e)}", file=sys.stderr)
+        # Record failed conversion
+        conversion_counter.labels(
+            source_format=source_format, target_format=target_format, status="error"
+        ).inc()
+
+        logger.error(f"Error during conversion: {str(e)}")
         return 1
+    finally:
+        # Always decrement the active conversions gauge
+        active_conversions.dec()
 
 
 if __name__ == "__main__":
