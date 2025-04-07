@@ -106,7 +106,11 @@ def init_telemetry(
     if attributes:
         resource_attributes.update(attributes)
 
-    resource = Resource.create(resource_attributes)
+    # Use Resource.create with type annotations that match expected types
+    # Resource.create expects Mapping which is covariant, not Dict which is invariant
+    from typing import Mapping
+
+    resource = Resource.create({k: v for k, v in resource_attributes.items()})
 
     # Create tracer provider with resource
     _tracer_provider = TracerProvider(resource=resource)
@@ -165,6 +169,12 @@ def get_tracer() -> trace.Tracer:
         # Initialize with defaults if not already done
         init_telemetry()
 
+    # Ensure we always return a valid Tracer and never None
+    if _tracer is None:
+        # Fallback to a no-op tracer if initialization failed somehow
+        logger.warning("Telemetry not initialized properly, using no-op tracer")
+        return trace.get_tracer("har_oa3_converter_noop")
+
     return _tracer
 
 
@@ -215,7 +225,7 @@ def traced(
 
 
 def timed(
-    metric_histogram: Histogram, labels: Dict[str, str] = None
+    metric_histogram: Histogram, labels: Optional[Dict[str, str]] = None
 ) -> Callable[[Callable[..., T]], Callable[..., T]]:
     """Decorator to measure function execution time using Prometheus metrics.
 

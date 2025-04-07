@@ -62,10 +62,9 @@ repos:
         args: [
           '--config-file=pyproject.toml',
         ]
-        # Make mypy non-blocking so it doesn't prevent commits
-        # but still shows warnings
+        # Enable mypy checks on every commit
         verbose: true
-        stages: [manual]
+        stages: [commit]
 
       - id: radon-cc
         name: radon-cc

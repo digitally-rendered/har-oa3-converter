@@ -5,6 +5,7 @@ It configures loggers with appropriate formats and log levels based on configura
 """
 
 import logging
+import logging.config  # Add this import for dictConfig
 import os
 import sys
 from typing import Any, Dict, Optional, Union
@@ -82,12 +83,20 @@ def configure_logging(
             break
 
     # Basic configuration
-    logging.basicConfig(
-        level=level,
-        format=log_format or DEFAULT_LOG_FORMAT,
-        filename=log_file,
-        filemode="a" if log_file else None,
-    )
+    if log_file:
+        # If a log file is specified, configure with file output
+        logging.basicConfig(
+            level=level,
+            format=log_format or DEFAULT_LOG_FORMAT,
+            filename=log_file,
+            filemode="a",
+        )
+    else:
+        # Otherwise just set the level and format
+        logging.basicConfig(
+            level=level,
+            format=log_format or DEFAULT_LOG_FORMAT,
+        )
 
     # Configure root logger for console output if no file is specified
     if not log_file:
