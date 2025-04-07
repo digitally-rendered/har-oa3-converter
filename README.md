@@ -1,7 +1,9 @@
 # HAR to OpenAPI 3 Converter
 
 [![Python Tests](https://github.com/digitally-rendered/har-oa3-converter/actions/workflows/python-tests.yml/badge.svg)](https://github.com/digitally-rendered/har-oa3-converter/actions/workflows/python-tests.yml)
+[![Python Versions](https://raw.githubusercontent.com/digitally-rendered/har-oa3-converter/main/scripts/python-versions-badge.svg)](https://github.com/digitally-rendered/har-oa3-converter/actions/workflows/python-compatibility.yml)
 [![Code Quality](https://github.com/digitally-rendered/har-oa3-converter/actions/workflows/code-quality.yml/badge.svg)](https://github.com/digitally-rendered/har-oa3-converter/actions/workflows/code-quality.yml)
+[![Python Versions](https://raw.githubusercontent.com/digitally-rendered/har-oa3-converter/main/scripts/python-versions-badge.svg)](https://github.com/digitally-rendered/har-oa3-converter/actions/workflows/python-compatibility.yml)
 [![codecov](https://codecov.io/gh/digitally-rendered/har-oa3-converter/branch/main/graph/badge.svg)](https://codecov.io/gh/digitally-rendered/har-oa3-converter)
 [![Coverage](https://raw.githubusercontent.com/digitally-rendered/har-oa3-converter/main/badges/coverage.svg)](https://github.com/digitally-rendered/har-oa3-converter/actions/workflows/python-tests.yml)
 [![Python Versions](https://raw.githubusercontent.com/digitally-rendered/har-oa3-converter/main/badges/python-versions.svg)](https://github.com/digitally-rendered/har-oa3-converter/actions/workflows/python-compatibility.yml)
