@@ -10,8 +10,6 @@ echo "Installing Homebrew formulae..."
 brew install \
   autoconf \
   awscli \
-  bazel \
-  bazelisk \
   bosh-cli \
   brotli \
   c-ares \

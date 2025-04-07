@@ -649,36 +649,51 @@ poetry run isort --check har_oa3_converter tests
 poetry run isort har_oa3_converter tests
 ```
 
-### Bazel Build System
+### Poetry Build System
 
-This project also includes a Bazel build system for managing the build and publishing processes:
+This project uses Poetry exclusively for dependency management, building, testing, and publishing:
 
 ```bash
-# Install Bazel if you don't have it already
-brew install bazelisk  # on macOS (uses Bazelisk which manages Bazel versions)
+# Install Poetry if you don't have it already
+curl -sSL https://install.python-poetry.org | python3 -
 
-# Build the project using Bazel
-bazel build //...
+# Build the project using Poetry
+poetry build
 
-# Run tests
-bazel test //...
+# Run tests with full coverage reporting (targeting 100% coverage)
+poetry run pytest --cov=har_oa3_converter --cov-report=xml --cov-report=html --cov-report=term --json-report --json-report-file=pytest-report.json --cov-branch -v
 
-# Run the command-line tools through Bazel
-bazel run //:har2oa3 -- input.har -o output.yaml
-bazel run //:api-convert -- input.har output.yaml
-bazel run //:api-server
+# Run the command-line tools through Poetry
+poetry run har2oa3 input.har -o output.yaml
+poetry run format-converter input.har output.yaml
+poetry run har-oa3-api
 
-# Use Bazel scripts for Poetry operations
-./bazel/build.sh      # Build the Poetry package
-./bazel/publish.sh    # Publish to PyPI (requires POETRY_PYPI_TOKEN_PYPI env var)
+# Publish to PyPI (requires authentication)
+poetry publish
 ```
 
-Bazel offers several advantages:
+Poetry offers several advantages:
 
-- Hermetic builds with better reproducibility
-- Incremental, parallel builds for better performance
-- Integration with other build systems and CI/CD pipelines
-- Consistent build environment across different machines
+- **Deterministic builds**: Ensures consistent builds across different environments
+- **Single source of truth**: `pyproject.toml` contains all project metadata and dependencies
+- **Easy development**: Virtual environments are automatically managed
+- **Seamless publishing**: Simplified package publishing workflow
+- **Package versioning**: Built-in version management
+
+### Documentation
+
+Generate the documentation using Sphinx:
+
+```bash
+# Generate HTML documentation
+cd docs
+poetry run sphinx-build -b html source build/html
+
+# View the documentation locally
+open build/html/index.html
+```
+
+The documentation is automatically published to GitHub Pages when changes are pushed to the main branch. All models are represented in JSON_SCHEMA documents and fully tested with complete coverage.
 
 ## Contributing
 
