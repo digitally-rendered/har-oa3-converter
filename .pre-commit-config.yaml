@@ -100,3 +100,14 @@ repos:
         verbose: true
         # Use manual stage initially until the hook is working properly
         stages: [manual]
+
+      - id: doc-generation
+        name: doc-generation
+        description: 'Generate API documentation'
+        entry: bash -c 'cd docs && poetry run sphinx-build -b html source build/html'
+        language: system
+        files: '^(har_oa3_converter/.*\.py|docs/source/.*\.rst)$'
+        pass_filenames: false
+        # Run on every commit to ensure documentation stays updated
+        # This ensures our docs always reflect the current code state
+        stages: [commit]

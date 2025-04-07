@@ -125,10 +125,18 @@ jobs:
         fail_ci_if_error: false
 
     - name: Generate coverage badge
-      if: matrix.python-version == '3.11'  # Only generate badge for one Python version
+      if: matrix.python-version == '3.11' && github.ref == 'refs/heads/main'  # Only on main branch with Python 3.11
       run: |
+        # Create badges directory
+        mkdir -p badges
+
+        # Install coverage-badge
         poetry run python -m pip install coverage-badge
+
+        # Generate badge and copy to badges directory
         poetry run coverage-badge -o coverage-badge.svg
+        cp coverage-badge.svg badges/
+        cp coverage-badge.svg badges/coverage.svg  # Create with consistent name
 
     - name: Check coverage threshold
       run: |
@@ -152,3 +160,20 @@ jobs:
           coverage.xml
           htmlcov/
           coverage-badge.svg
+          badges/
+
+    - name: Commit and push coverage badge
+      if: matrix.python-version == '3.11' && github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        # Configure git
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+
+        # Add the coverage badge to git
+        git add badges/coverage.svg
+
+        # Commit with a [skip ci] tag to avoid triggering another workflow
+        git commit -m "Update code coverage badge [skip ci]" || echo "No changes to commit"
+
+        # Push to the repository
+        git push origin main
