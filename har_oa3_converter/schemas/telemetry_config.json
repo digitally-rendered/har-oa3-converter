@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "TelemetryConfiguration",
+  "description": "Configuration schema for OpenTelemetry and Prometheus metrics",
+  "type": "object",
+  "properties": {
+    "enabled": {
+      "type": "boolean",
+      "description": "Whether telemetry collection is enabled",
+      "default": true
+    },
+    "service_name": {
+      "type": "string",
+      "description": "Name of the service for telemetry reporting",
+      "default": "har-oa3-converter"
+    },
+    "exporter": {
+      "type": "string",
+      "description": "Type of OpenTelemetry exporter to use",
+      "enum": ["console", "otlp", "none"],
+      "default": "console"
+    },
+    "exporter_endpoint": {
+      "type": "string",
+      "description": "Endpoint URL for the OTLP exporter",
+      "format": "uri"
+    },
+    "metrics_port": {
+      "type": "integer",
+      "description": "Port to expose Prometheus metrics on",
+      "minimum": 1024,
+      "maximum": 65535
+    },
+    "log_level": {
+      "type": "string",
+      "description": "Log level for telemetry components",
+      "enum": ["debug", "info", "warning", "error", "critical"],
+      "default": "info"
+    },
+    "attributes": {
+      "type": "object",
+      "description": "Additional resource attributes to include with telemetry data",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "sampling_rate": {
+      "type": "number",
+      "description": "Sampling rate for traces (0.0-1.0)",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "default": 1.0
+    }
+  },
+  "required": ["enabled", "service_name"]
+}

@@ -1,6 +1,7 @@
 """Tests for the CLI modules of HAR to OpenAPI 3 converter."""
 
 import json
+import logging
 import os
 import tempfile
 from pathlib import Path
@@ -421,36 +422,45 @@ class TestFormatCli:
         assert args.description == "Custom description"
         assert args.servers == ["https://api1.example.com", "https://api2.example.com"]
 
-    def test_format_cli_main_success(self, sample_har_file, sample_openapi3_file):
+    def test_format_cli_main_success(
+        self, sample_har_file, sample_openapi3_file, caplog
+    ):
         """Test successful execution of format CLI."""
         # Test HAR to OpenAPI 3 conversion
         with tempfile.NamedTemporaryFile(suffix=".yaml", delete=False) as temp_file:
             output_path = temp_file.name
 
         try:
-            # Run with mock to capture output
-            with mock.patch("sys.stdout") as mock_stdout:
-                result = format_cli_main(
-                    [
-                        sample_har_file,
-                        output_path,
-                        "--from-format",
-                        "har",
-                        "--to-format",
-                        "openapi3",
-                    ]
-                )
+            # Set log level to capture INFO logs
+            caplog.set_level(logging.INFO)
 
-                # Check result
-                assert result == 0
-                assert Path(output_path).exists()
-                assert mock_stdout.write.call_count > 0
+            # Clear previous logs
+            caplog.clear()
 
-                # Check output file content
-                with open(output_path, "r") as f:
-                    content = yaml.safe_load(f)
-                    assert "openapi" in content
-                    assert content["openapi"] == "3.0.0"
+            # Run the command
+            result = format_cli_main(
+                [
+                    sample_har_file,
+                    output_path,
+                    "--from-format",
+                    "har",
+                    "--to-format",
+                    "openapi3",
+                ]
+            )
+
+            # Check result
+            assert result == 0
+            assert Path(output_path).exists()
+            # Verify logs show success
+            assert "Converting" in caplog.text
+            assert "successful" in caplog.text
+
+            # Check output file content
+            with open(output_path, "r") as f:
+                content = yaml.safe_load(f)
+                assert "openapi" in content
+                assert content["openapi"] == "3.0.0"
         finally:
             if Path(output_path).exists():
                 os.unlink(output_path)
@@ -460,50 +470,56 @@ class TestFormatCli:
             output_path = temp_file.name
 
         try:
-            # Run with mock to capture output
-            with mock.patch("sys.stdout") as mock_stdout:
-                result = format_cli_main(
-                    [
-                        sample_openapi3_file,
-                        output_path,
-                        "--from-format",
-                        "openapi3",
-                        "--to-format",
-                        "swagger",
-                    ]
-                )
+            # Clear previous logs and set level
+            caplog.clear()
+            caplog.set_level(logging.INFO)
 
-                # Check result
-                assert result == 0
-                assert Path(output_path).exists()
+            # Run the command
+            result = format_cli_main(
+                [
+                    sample_openapi3_file,
+                    output_path,
+                    "--from-format",
+                    "openapi3",
+                    "--to-format",
+                    "swagger",
+                ]
+            )
 
-                # Check output file content
-                with open(output_path, "r") as f:
-                    content = json.load(f)
-                    assert "swagger" in content
-                    assert content["swagger"] == "2.0"
+            # Check result
+            assert result == 0
+            assert Path(output_path).exists()
+
+            # Check output file content
+            with open(output_path, "r") as f:
+                content = json.load(f)
+                assert "swagger" in content
+                assert content["swagger"] == "2.0"
         finally:
             if Path(output_path).exists():
                 os.unlink(output_path)
 
-    def test_format_cli_auto_detection(self, sample_har_file):
+    def test_format_cli_auto_detection(self, sample_har_file, caplog):
         """Test format auto-detection in format CLI."""
         with tempfile.NamedTemporaryFile(suffix=".yaml", delete=False) as temp_file:
             output_path = temp_file.name
 
         try:
+            # Clear previous logs and set level
+            caplog.clear()
+            caplog.set_level(logging.INFO)
+
             # Run without specifying formats (rely on auto-detection)
-            with mock.patch("sys.stdout"):
-                result = format_cli_main([sample_har_file, output_path])
+            result = format_cli_main([sample_har_file, output_path])
 
-                # Check result
-                assert result == 0
-                assert Path(output_path).exists()
+            # Check result
+            assert result == 0
+            assert Path(output_path).exists()
 
-                # Check output file content
-                with open(output_path, "r") as f:
-                    content = yaml.safe_load(f)
-                    assert "openapi" in content
+            # Check output file content
+            with open(output_path, "r") as f:
+                content = yaml.safe_load(f)
+                assert "openapi" in content
         finally:
             if Path(output_path).exists():
                 os.unlink(output_path)
@@ -529,16 +545,22 @@ class TestFormatCli:
             )
             assert result == 1
 
-    def test_format_cli_list_formats(self):
+    def test_format_cli_list_formats(self, caplog):
         """Test listing available formats in format CLI."""
         # The actual implementation requires input/output even with --list-formats
         # Create dummy files to satisfy the argument parser
         with tempfile.NamedTemporaryFile(
             suffix=".txt"
         ) as dummy_input, tempfile.NamedTemporaryFile(suffix=".txt") as dummy_output:
-            with mock.patch("sys.stdout") as mock_stdout:
-                result = format_cli_main(
-                    [dummy_input.name, dummy_output.name, "--list-formats"]
-                )
-                assert result == 0
-                assert mock_stdout.write.call_count > 0
+            # Set log level to capture INFO logs
+            caplog.set_level(logging.INFO)
+
+            # Run the command
+            result = format_cli_main(
+                [dummy_input.name, dummy_output.name, "--list-formats"]
+            )
+            assert result == 0
+
+            # Check that our logs contain information about formats
+            assert "Available formats" in caplog.text
+            assert "har" in caplog.text

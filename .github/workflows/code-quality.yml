@@ -69,6 +69,58 @@ jobs:
         fi
       continue-on-error: true
 
+    - name: Run Radon code quality checks
+      if: always()
+      run: |
+        echo "Running code complexity analysis..."
+        mkdir -p reports/radon
+        poetry run radon cc -a -s --json har_oa3_converter > reports/radon/cc_report.json
+
+        echo "Running maintainability index analysis..."
+        poetry run radon mi -s har_oa3_converter > reports/radon/mi_report.txt
+
+        echo "Running raw metrics analysis..."
+        poetry run radon raw -s har_oa3_converter > reports/radon/raw_report.txt
+
+        # Simple code duplication report using radon and custom script
+        echo "Running code similarity analysis..."
+        poetry run python -c "
+        import os, json, glob
+        from radon.visitors import HalsteadVisitor
+        files = glob.glob('har_oa3_converter/**/*.py', recursive=True)
+        duplicates = []
+        for i, file1 in enumerate(files):
+            with open(file1, 'r') as f:
+                try:
+                    visitor1 = HalsteadVisitor.from_code(f.read())
+                    tokens1 = visitor1.operators + visitor1.operands
+                    for file2 in files[i+1:]:
+                        with open(file2, 'r') as f2:
+                            visitor2 = HalsteadVisitor.from_code(f2.read())
+                            tokens2 = visitor2.operators + visitor2.operands
+                            common = set(tokens1) & set(tokens2)
+                            if len(common) > 0 and len(tokens1) > 0 and len(tokens2) > 0:
+                                similarity = len(common) / max(len(tokens1), len(tokens2))
+                                if similarity > 0.7:
+                                    duplicates.append({'file1': file1, 'file2': file2, 'similarity': similarity})
+                except Exception as e:
+                    print(f'Error processing {file1}: {e}')
+                    continue
+        duplicates.sort(key=lambda x: x['similarity'], reverse=True)
+        with open('reports/radon/duplication_report.json', 'w') as f:
+            json.dump({'duplicates': duplicates, 'summary': {'files_analyzed': len(files), 'duplicates_found': len(duplicates)}}, f, indent=2)
+        print(f'Found {len(duplicates)} potential code duplications')
+        "
+      continue-on-error: true
+
+    - name: Upload code quality reports as artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: code-quality-reports-${{ matrix.python-version }}
+        path: |
+          reports/radon/*.json
+
     - name: Upload lint reports as artifacts
       if: always()
       uses: actions/upload-artifact@v4
@@ -78,10 +130,10 @@ jobs:
           pylint-report.txt
           pylint-report.json
 
-    - name: Lint Summary
+    - name: Quality Summary
       if: always()
       run: |
-        echo "## Python ${{ matrix.python-version }} Lint Results" >> $GITHUB_STEP_SUMMARY
+        echo "## Python ${{ matrix.python-version }} Quality Results" >> $GITHUB_STEP_SUMMARY
 
         # Read pylint score from report file
         if [ -f pylint-report.txt ]; then
@@ -89,6 +141,22 @@ jobs:
           echo "- Pylint Score: $SCORE" >> $GITHUB_STEP_SUMMARY
         else
           echo "- Pylint report not available" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        # Read duplication report if available
+        if [ -f reports/radon/duplication_report.json ]; then
+          NUM_DUPLICATES=$(jq '.summary.duplicates_found' reports/radon/duplication_report.json || echo "N/A")
+          echo "- Code Duplication: $NUM_DUPLICATES potential duplications found" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "- Code Duplication report not available" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        # Read complexity report if available
+        if [ -f reports/radon/cc_report.json ]; then
+          COMPLEX_FILES=$(jq 'length' reports/radon/cc_report.json || echo "N/A")
+          echo "- Complex Files: $COMPLEX_FILES files analyzed for complexity" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "- Complexity report not available" >> $GITHUB_STEP_SUMMARY
         fi
 
         # Use the lint result from the pylint report step
