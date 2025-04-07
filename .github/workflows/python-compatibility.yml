@@ -60,9 +60,14 @@ jobs:
     - name: Test Summary
       run: |
         echo "## Python ${{ matrix.python-version }} Compatibility" >> $GITHUB_STEP_SUMMARY
-        # Set default values in case outputs are empty
-        IMPORT_RESULT="${{ steps.import_test.outputs.test_result || 'failure' }}"
-        MINIMAL_RESULT="${{ steps.minimal_test.outputs.test_result || 'failure' }}"
+
+        # Get results from previous steps
+        IMPORT_RESULT="${{ steps.import_test.outputs.test_result }}"
+        MINIMAL_RESULT="${{ steps.minimal_test.outputs.test_result }}"
+
+        # Default to failure if outputs are empty
+        if [ -z "$IMPORT_RESULT" ]; then IMPORT_RESULT="failure"; fi
+        if [ -z "$MINIMAL_RESULT" ]; then MINIMAL_RESULT="failure"; fi
 
         if [ "$IMPORT_RESULT" == "success" ]; then
           echo "✅ Import test passed" >> $GITHUB_STEP_SUMMARY
