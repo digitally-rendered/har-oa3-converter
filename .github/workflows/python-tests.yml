@@ -118,6 +118,26 @@ jobs:
           exit 1
         fi
 
+    - name: Generate coverage badge
+      if: github.ref == 'refs/heads/main' && matrix.python-version == '3.13'
+      run: |
+        # Extract coverage percentage from the coverage report
+        COVERAGE=$(poetry run coverage report | grep TOTAL | awk '{print $NF}' | sed 's/%//')
+        echo "Current coverage: $COVERAGE%"
+
+        # Generate the coverage badge
+        python scripts/generate_coverage_badge.py
+
+    - name: Commit and push coverage badge
+      if: github.ref == 'refs/heads/main' && matrix.python-version == '3.13'
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add badges/coverage.svg
+        git commit -m "Update coverage badge [skip ci]" || echo "No changes to commit"
+        git push
+      continue-on-error: true
+
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
       with:

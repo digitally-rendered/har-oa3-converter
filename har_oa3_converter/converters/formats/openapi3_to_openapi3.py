@@ -11,7 +11,7 @@ from har_oa3_converter.converters.formats.base import FormatConverter
 from har_oa3_converter.utils.file_handler import FileHandler
 
 
-class OpenApi3ToOpenApi3Converter(FormatConverter):
+class OpenApi3ToOpenApi3Converter(FormatConverter[Dict[str, Any], Dict[str, Any]]):
     """Converter for OpenAPI 3 to OpenAPI 3 (format-to-format conversion)."""
 
     @classmethod
@@ -32,28 +32,19 @@ class OpenApi3ToOpenApi3Converter(FormatConverter):
         """
         return "openapi3"
 
-    def convert(
-        self, source_path: str, target_path: Optional[str] = None, **options
+    def convert_data(
+        self, source_data: Dict[str, Any], **options: Any
     ) -> Dict[str, Any]:
         """Convert OpenAPI 3 to OpenAPI 3 (format conversion only).
 
         Args:
-            source_path: Path to OpenAPI 3 file
-            target_path: Path to output OpenAPI 3 file (optional)
+            source_data: OpenAPI 3 data as dictionary
             options: Additional options
 
         Returns:
             OpenAPI 3 specification as dictionary
         """
-        # Read OpenAPI 3 file using FileHandler to handle different formats properly
-        file_handler = FileHandler()
-        openapi3 = file_handler.load(source_path)
 
-        # Write to target file if specified
-        if target_path:
-            os.makedirs(os.path.dirname(os.path.abspath(target_path)), exist_ok=True)
-
-            # Use FileHandler to save the file in the appropriate format
-            file_handler.save(openapi3, target_path)
-
-        return openapi3
+        # Simply return the OpenAPI 3 data as is - this converter just performs format conversion
+        # when used with file I/O, but directly passes through the data structure
+        return source_data

@@ -102,9 +102,9 @@ def generate_badge(percentage):
 
 def main():
     """Main function to generate and save the badge."""
-    # Create scripts directory if it doesn't exist
-    scripts_dir = Path("scripts")
-    scripts_dir.mkdir(exist_ok=True)
+    # Create badges directory if it doesn't exist
+    badges_dir = Path("badges")
+    badges_dir.mkdir(exist_ok=True)
 
     # Get coverage percentage
     percentage = int(get_coverage_percentage())
@@ -114,7 +114,7 @@ def main():
     badge_svg = generate_badge(percentage)
 
     # Save badge
-    badge_path = scripts_dir / "coverage-badge.svg"
+    badge_path = badges_dir / "coverage.svg"
     badge_path.write_text(badge_svg)
     print(f"Badge saved to {badge_path}")
 
@@ -129,7 +129,7 @@ def main():
         else:
             print("Adding coverage badge to README")
             # Add badge after the title
-            new_badge = f"[![coverage](https://raw.githubusercontent.com/digitally-rendered/har-oa3-converter/main/scripts/coverage-badge.svg)](.github/workflows/coverage-report.yml)"
+            new_badge = f"[![coverage](https://raw.githubusercontent.com/digitally-rendered/har-oa3-converter/main/badges/coverage.svg)](.github/workflows/coverage-report.yml)"
             # Insert after the existing badges
             if "[![" in readme_content:
                 pattern = r"(\[!\[[^\]]+\]\([^\)]+\)\]\([^\)]+\)\s*\n)"

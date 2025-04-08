@@ -7,7 +7,7 @@ import pytest
 from har_oa3_converter.converters.formats.base import FormatConverter
 
 
-class MockConverter(FormatConverter):
+class MockConverter(FormatConverter[Dict[str, Any], Dict[str, Any]]):
     """Mock converter implementation for testing."""
 
     @classmethod
@@ -17,6 +17,16 @@ class MockConverter(FormatConverter):
     @classmethod
     def get_target_format(cls) -> str:
         return "mock_target"
+
+    def convert_data(
+        self, source_data: Dict[str, Any], **options: Any
+    ) -> Dict[str, Any]:
+        """Convert source data to target format."""
+        return {
+            "converted": True,
+            "source_data": source_data,
+            "options": options,
+        }
 
     def convert(
         self, source_path: str, target_path: Optional[str] = None, **options

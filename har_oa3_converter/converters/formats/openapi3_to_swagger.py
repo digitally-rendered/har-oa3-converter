@@ -10,7 +10,7 @@ from har_oa3_converter.converters.formats.base import FormatConverter
 from har_oa3_converter.utils.file_handler import FileHandler
 
 
-class OpenApi3ToSwaggerConverter(FormatConverter):
+class OpenApi3ToSwaggerConverter(FormatConverter[Dict[str, Any], Dict[str, Any]]):
     """Converter from OpenAPI 3 to Swagger 2 (OpenAPI 2)."""
 
     @classmethod
@@ -31,33 +31,22 @@ class OpenApi3ToSwaggerConverter(FormatConverter):
         """
         return "swagger"
 
-    def convert(
-        self, source_path: str, target_path: Optional[str] = None, **options
+    def convert_data(
+        self, source_data: Dict[str, Any], **options: Any
     ) -> Dict[str, Any]:
         """Convert OpenAPI 3 to Swagger 2.
 
         Args:
-            source_path: Path to OpenAPI 3 file
-            target_path: Path to output Swagger file (optional)
+            source_data: OpenAPI 3 data as dictionary
             options: Additional options
 
         Returns:
             Swagger specification as dictionary
         """
-        # Read OpenAPI 3 file using FileHandler to handle different formats properly
-        file_handler = FileHandler()
-        openapi3 = file_handler.load(source_path)
-
         # Convert OpenAPI 3 to Swagger 2
-        swagger = self._convert_openapi3_to_swagger2(openapi3)
+        swagger = self._convert_openapi3_to_swagger2(source_data)
 
-        # Write to target file if specified
-        if target_path:
-            os.makedirs(os.path.dirname(os.path.abspath(target_path)), exist_ok=True)
-
-            # Use FileHandler to save the file in the appropriate format
-            file_handler.save(swagger, target_path)
-
+        # Return the converted data
         return swagger
 
     def _convert_openapi3_to_swagger2(self, openapi3: Dict[str, Any]) -> Dict[str, Any]:

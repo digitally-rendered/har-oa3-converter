@@ -1,0 +1,24 @@
+[run]
+omit =
+    # Exclude code quality tools that aren't part of core functionality
+    har_oa3_converter/tools/radon_runner.py
+    # Exclude test files
+    */tests/*
+    # Exclude type stubs
+    *.pyi
+
+[report]
+exclude_lines =
+    # Skip defensive assertion code
+    raise NotImplementedError
+    # Skip abstract methods
+    @abstractmethod
+    # Skip debug-only code
+    def __repr__
+    if __debug__:
+    if settings.DEBUG
+    # Skip coverage pragmas
+    pragma: no cover
+    # Skip code that should never execute
+    if 0:
+    if __name__ == .__main__.:
