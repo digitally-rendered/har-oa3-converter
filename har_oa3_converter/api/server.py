@@ -11,6 +11,7 @@ from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
 
 from har_oa3_converter import __version__
+from har_oa3_converter.api.direct_routes import router as direct_conversion_router
 from har_oa3_converter.api.routes import router as conversion_router
 
 # Create FastAPI application
@@ -31,6 +32,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(conversion_router, prefix="/api")
+app.include_router(direct_conversion_router, prefix="/api/direct")
 
 
 # Add exception handlers

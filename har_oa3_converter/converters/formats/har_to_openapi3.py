@@ -11,7 +11,7 @@ from har_oa3_converter.converters.har_to_oas3 import (
 from har_oa3_converter.utils.file_handler import FileHandler
 
 
-class HarToOpenApi3Converter(FormatConverter):
+class HarToOpenApi3Converter(FormatConverter[Dict[str, Any], Dict[str, Any]]):
     """Converter from HAR to OpenAPI 3."""
 
     @classmethod
@@ -32,22 +32,29 @@ class HarToOpenApi3Converter(FormatConverter):
         """
         return "openapi3"
 
-    def convert(
-        self, source_path: str, target_path: Optional[str] = None, **options
+    def convert_data(
+        self, source_data: Dict[str, Any], **options: Any
     ) -> Dict[str, Any]:
-        """Convert HAR to OpenAPI 3.
+        """Convert HAR data to OpenAPI 3.
 
         Args:
-            source_path: Path to HAR file
-            target_path: Path to output OpenAPI 3 file (optional)
+            har_data: HAR data as dictionary
             options: Additional options (title, version, description, servers)
 
         Returns:
             OpenAPI 3 specification as dictionary
+
+        Raises:
+            ValueError: If the data is not a valid HAR format
         """
-        # Read HAR file using FileHandler to handle different formats properly
-        file_handler = FileHandler()
-        har_data = file_handler.load(source_path)
+
+        # Validate input type
+        if not isinstance(source_data, dict):
+            raise ValueError("HAR data must be a dictionary")
+
+        # Validate HAR structure
+        if "log" not in source_data:
+            raise ValueError("Invalid HAR data: missing 'log' key")
 
         # Create HAR to OAS3 converter
         converter = OriginalConverter()
@@ -69,12 +76,14 @@ class HarToOpenApi3Converter(FormatConverter):
         converter.servers = servers
 
         # Convert HAR to OpenAPI 3 using the convert method
-        openapi3 = converter.convert_from_string(json.dumps(har_data))
+        # First convert the HAR data to JSON string for the underlying converter
+        har_json_str = json.dumps(source_data)
 
-        # Write to target file if specified
-        if target_path:
-            os.makedirs(os.path.dirname(os.path.abspath(target_path)), exist_ok=True)
-            # Use FileHandler to save the file in the appropriate format
-            file_handler.save(openapi3, target_path)
+        # Use the original converter to generate OpenAPI 3 specification
+        openapi3 = converter.convert_from_string(har_json_str)
+
+        # The openapi3 should already be a dictionary, but let's ensure it
+        if isinstance(openapi3, str):
+            openapi3 = json.loads(openapi3)
 
         return openapi3

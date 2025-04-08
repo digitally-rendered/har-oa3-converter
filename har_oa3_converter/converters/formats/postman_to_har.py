@@ -29,23 +29,16 @@ class PostmanToHarConverter(FormatConverter):
         """
         return "har"
 
-    def convert(
-        self, source_path: str, target_path: Optional[str] = None, **options
-    ) -> Dict[str, Any]:
-        """Convert Postman Collection to HAR format.
+    def convert_data(self, postman_data: Dict[str, Any], **options) -> Dict[str, Any]:
+        """Convert Postman Collection data to HAR format.
 
         Args:
-            source_path: Path to Postman Collection file
-            target_path: Path to output HAR file (optional)
+            postman_data: Postman Collection data as dictionary
             options: Additional options
 
         Returns:
             HAR data as dictionary
         """
-        # Read Postman Collection file using FileHandler to handle different formats properly
-        file_handler = FileHandler()
-        postman_data = file_handler.load(source_path)
-
         # Create HAR structure
         har_data = {
             "log": {
@@ -62,12 +55,6 @@ class PostmanToHarConverter(FormatConverter):
         # Ensure entries is correctly typed as List[Dict[str, Any]] for mypy
         entries: List[Dict[str, Any]] = har_data["log"]["entries"]
         self._process_postman_items(postman_data, entries)
-
-        # Write to target file if specified
-        if target_path:
-            os.makedirs(os.path.dirname(os.path.abspath(target_path)), exist_ok=True)
-            # Use FileHandler to save the file in the appropriate format
-            file_handler.save(har_data, target_path)
 
         return har_data
 

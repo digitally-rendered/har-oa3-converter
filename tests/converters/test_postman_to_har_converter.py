@@ -265,50 +265,28 @@ class TestPostmanToHarConverter:
         assert converter.get_target_format() == "har"
 
     def test_simple_conversion(self, simple_postman_collection):
-        """Test converting a simple Postman Collection to HAR."""
-        # Mock the FileHandler to avoid any file system operations
-        with patch(
-            "har_oa3_converter.converters.formats.postman_to_har.FileHandler"
-        ) as mock_file_handler_class:
-            mock_file_handler = MagicMock()
-            mock_file_handler_class.return_value = mock_file_handler
-            mock_file_handler.load.return_value = simple_postman_collection
+        """Test converting a simple Postman Collection to HAR using data-centric approach."""
+        # Use data-centric approach with convert_data method
+        converter = PostmanToHarConverter()
+        result = converter.convert_data(simple_postman_collection)
 
-            input_file = "input.json"
-            output_file = "output.har"
+        # Basic structure checks
+        assert "log" in result
+        assert "version" in result["log"]
+        assert "creator" in result["log"]
+        assert "entries" in result["log"]
 
-            converter = PostmanToHarConverter()
-            result = converter.convert(input_file, output_file)
-
-            # Basic structure checks
-            assert "log" in result
-            assert "version" in result["log"]
-            assert "creator" in result["log"]
-            assert "entries" in result["log"]
-
-            # Check the converted entry
-            entries = result["log"]["entries"]
-            assert len(entries) == 1
-            assert entries[0]["request"]["method"] == "GET"
-            assert "https://example.com/api/simple" in entries[0]["request"]["url"]
-
-            # Verify save was called with correct arguments
-            mock_file_handler.save.assert_called_once()
+        # Check the converted entry
+        entries = result["log"]["entries"]
+        assert len(entries) == 1
+        assert entries[0]["request"]["method"] == "GET"
+        assert "https://example.com/api/simple" in entries[0]["request"]["url"]
 
     def test_empty_collection(self, empty_postman_collection):
         """Test converting an empty Postman Collection."""
-        # Mock the FileHandler to avoid any file system operations
-        with patch(
-            "har_oa3_converter.converters.formats.postman_to_har.FileHandler"
-        ) as mock_file_handler_class:
-            mock_file_handler = MagicMock()
-            mock_file_handler_class.return_value = mock_file_handler
-            mock_file_handler.load.return_value = empty_postman_collection
-
-            input_file = "empty_input.json"
-
-            converter = PostmanToHarConverter()
-            result = converter.convert(input_file)
+        # Use data-centric approach with convert_data method
+        converter = PostmanToHarConverter()
+        result = converter.convert_data(empty_postman_collection)
 
         # Should have empty entries
         assert "log" in result
@@ -317,22 +295,14 @@ class TestPostmanToHarConverter:
 
     def test_complex_conversion(self, complex_postman_collection):
         """Test converting a complex Postman Collection with nested folders and different request types."""
-        # Mock the FileHandler to avoid any file system operations
-        with patch(
-            "har_oa3_converter.converters.formats.postman_to_har.FileHandler"
-        ) as mock_file_handler_class:
-            mock_file_handler = MagicMock()
-            mock_file_handler_class.return_value = mock_file_handler
-            mock_file_handler.load.return_value = complex_postman_collection
+        # Use data-centric approach with convert_data method
+        converter = PostmanToHarConverter()
 
-            # Also patch the _convert_query_params method to handle string URLs
-            with patch.object(
-                PostmanToHarConverter, "_convert_query_params", return_value=[]
-            ):
-                input_file = "complex_input.json"
-
-                converter = PostmanToHarConverter()
-                result = converter.convert(input_file)
+        # Patch the _convert_query_params method to handle string URLs if needed
+        with patch.object(
+            PostmanToHarConverter, "_convert_query_params", return_value=[]
+        ):
+            result = converter.convert_data(complex_postman_collection)
 
         # Should have converted all requests
         entries = result["log"]["entries"]
@@ -405,53 +375,47 @@ class TestPostmanToHarConverter:
 
     def test_invalid_requests(self, invalid_postman_collection):
         """Test handling of invalid requests in a Postman Collection."""
-        # Mock the FileHandler to avoid any file system operations
-        with patch(
-            "har_oa3_converter.converters.formats.postman_to_har.FileHandler"
-        ) as mock_file_handler_class:
-            mock_file_handler = MagicMock()
-            mock_file_handler_class.return_value = mock_file_handler
-            mock_file_handler.load.return_value = invalid_postman_collection
-
-            input_file = "invalid_input.json"
-
-            converter = PostmanToHarConverter()
-            result = converter.convert(input_file)
+        # Use data-centric approach with convert_data method
+        converter = PostmanToHarConverter()
+        result = converter.convert_data(invalid_postman_collection)
 
         # Should still produce a valid HAR with whatever could be converted
         assert "log" in result
         assert "entries" in result["log"]
         # Some entries may be skipped due to invalid data
 
-    def test_nonexistent_input_file(self):
-        """Test handling of nonexistent input file."""
-        with patch(
-            "har_oa3_converter.converters.formats.postman_to_har.FileHandler"
-        ) as mock_file_handler_class:
-            mock_file_handler = MagicMock()
-            mock_file_handler_class.return_value = mock_file_handler
-            mock_file_handler.load.side_effect = FileNotFoundError(
-                "/nonexistent/file.json"
-            )
+    def test_invalid_input_type(self):
+        """Test handling of invalid input type."""
+        converter = PostmanToHarConverter()
 
-            converter = PostmanToHarConverter()
-            with pytest.raises(FileNotFoundError):
-                converter.convert("/nonexistent/file.json")
+        # Test with None value - converter currently raises AttributeError
+        with pytest.raises(AttributeError):
+            converter.convert_data(None)
 
-    def test_invalid_json(self):
-        """Test handling of invalid JSON input."""
-        with patch(
-            "har_oa3_converter.converters.formats.postman_to_har.FileHandler"
-        ) as mock_file_handler_class:
-            mock_file_handler = MagicMock()
-            mock_file_handler_class.return_value = mock_file_handler
-            mock_file_handler.load.side_effect = json.JSONDecodeError(
-                "Invalid JSON", "", 0
-            )
+        # Test with non-dict value - should also raise AttributeError
+        with pytest.raises(AttributeError):
+            converter.convert_data("not a dictionary")
 
-            converter = PostmanToHarConverter()
-            with pytest.raises(json.JSONDecodeError):
-                converter.convert("input.json")
+    def test_missing_required_fields(self):
+        """Test handling of collections missing required fields."""
+        converter = PostmanToHarConverter()
+
+        # Empty dict should still produce a valid HAR with empty entries
+        result = converter.convert_data({})
+        assert "log" in result
+        assert "entries" in result["log"]
+        assert len(result["log"]["entries"]) == 0
+
+        # Incomplete structure - converter should handle this gracefully
+        incomplete_collection = {
+            "info": {"name": "Test Collection"}
+            # Missing 'item' field
+        }
+
+        result = converter.convert_data(incomplete_collection)
+        assert "log" in result
+        assert "entries" in result["log"]
+        assert len(result["log"]["entries"]) == 0
 
     def test_process_query_params(self):
         """Test the _convert_query_params method directly."""
@@ -586,41 +550,18 @@ class TestPostmanToHarConverter:
 
     def test_convert_with_no_target_path(self, simple_postman_collection):
         """Test converting without specifying a target path."""
-        # Mock the FileHandler to avoid any file system operations
-        with patch(
-            "har_oa3_converter.converters.formats.postman_to_har.FileHandler"
-        ) as mock_file_handler_class:
-            mock_file_handler = MagicMock()
-            mock_file_handler_class.return_value = mock_file_handler
-            mock_file_handler.load.return_value = simple_postman_collection
+        # Use data-centric approach exclusively
+        converter = PostmanToHarConverter()
+        result = converter.convert_data(simple_postman_collection)
 
-            input_file = "input.json"
-
-            converter = PostmanToHarConverter()
-            result = converter.convert(input_file)
+        # Verify the result has the correct structure
+        assert "log" in result
+        assert "entries" in result["log"]
+        assert len(result["log"]["entries"]) > 0
 
         # Should return result but not write to file
         assert result is not None
         assert "log" in result
         assert "entries" in result["log"]
 
-    @patch("os.makedirs")
-    def test_create_output_directory(self, mock_makedirs, simple_postman_collection):
-        """Test that the output directory is created if it doesn't exist."""
-        # Mock the FileHandler to avoid any file system operations
-        with patch(
-            "har_oa3_converter.converters.formats.postman_to_har.FileHandler"
-        ) as mock_file_handler_class:
-            mock_file_handler = MagicMock()
-            mock_file_handler_class.return_value = mock_file_handler
-            mock_file_handler.load.return_value = simple_postman_collection
-
-            input_file = "input.json"
-            output_file = "/tmp/nonexistent/dir/output.har"
-
-            converter = PostmanToHarConverter()
-            converter.convert(input_file, output_file)
-
-        mock_makedirs.assert_called_with(
-            os.path.dirname(os.path.abspath(output_file)), exist_ok=True
-        )
+    # Remove file-based test that was using FileHandler

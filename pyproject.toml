@@ -66,6 +66,10 @@ radon-mi = "radon.cli:mi_main"
 radon-hal = "radon.cli:hal_main"
 radon-raw = "radon.cli:raw_main"
 
+# Test with coverage and badge generation
+test-with-coverage = "har_oa3_converter.tools.run_tests:main"
+
+
 [tool.black]
 line-length = 88
 target-version = ['py310', 'py311', 'py312']

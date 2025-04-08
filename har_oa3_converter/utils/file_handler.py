@@ -8,6 +8,8 @@ from typing import Any, Dict, Optional, Union
 import yaml
 from jsonschema import ValidationError, validate
 
+from har_oa3_converter.utils.format_detector import guess_format_from_content
+
 
 class FileHandler:
     """File handler for YAML and JSON files with schema validation support."""

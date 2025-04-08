@@ -1,5 +1,13 @@
+we should use pytest with coverage
+we should use pytest-html and pytest-json-report for reports
+we should use pytest-xdist for parallel testing
+we should use black for code quality
+we should use pylint for code quality
+the app is a mixed library, CLI and API application
 API endpoints should use JSON_SCHEMA documents in a file to interpret the parameter objects. this should be in a central file
 this application is meant to be stateless and request responses should be self contained
 the accept header should be used to determine the output format\
 the content-type header should be used to determine the input format
 content type and schema validation are interdependent
+the application is used to convert web resquest modeling formats
+we should support postman, hoppscotch, har,openapi3 and wsdl formats

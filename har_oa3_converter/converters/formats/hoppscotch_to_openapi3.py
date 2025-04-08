@@ -8,7 +8,7 @@ from har_oa3_converter.converters.formats.base import FormatConverter
 from har_oa3_converter.utils.file_handler import FileHandler
 
 
-class HoppscotchToOpenApi3Converter(FormatConverter):
+class HoppscotchToOpenApi3Converter(FormatConverter[Dict[str, Any], Dict[str, Any]]):
     """Converter from Hoppscotch Collection to OpenAPI 3."""
 
     @classmethod
@@ -29,38 +29,28 @@ class HoppscotchToOpenApi3Converter(FormatConverter):
         """
         return "openapi3"
 
-    def convert(
-        self, source_path: str, target_path: Optional[str] = None, **options
+    def convert_data(
+        self, source_data: Dict[str, Any], **options: Any
     ) -> Dict[str, Any]:
-        """Convert Hoppscotch Collection to OpenAPI 3.
+        """Convert Hoppscotch Collection data to OpenAPI 3.
 
         Args:
-            source_path: Path to Hoppscotch Collection file
-            target_path: Path to output OpenAPI 3 file (optional)
+            source_data: Hoppscotch Collection data as dictionary
             options: Additional options (title, version, description, servers)
 
         Returns:
             OpenAPI 3 specification as dictionary
 
         Raises:
-            ValueError: If the source file is not a valid Hoppscotch Collection
+            ValueError: If the data is not a valid Hoppscotch Collection
         """
-        # Load the Hoppscotch Collection
-        file_handler = FileHandler()
-        hoppscotch_data = file_handler.load(source_path)
 
         # Validate it's a Hoppscotch Collection
-        if not self._is_valid_hoppscotch_collection(hoppscotch_data):
-            raise ValueError(
-                f"The file {source_path} is not a valid Hoppscotch Collection"
-            )
+        if not self._is_valid_hoppscotch_collection(source_data):
+            raise ValueError("The provided data is not a valid Hoppscotch Collection")
 
         # Convert to OpenAPI 3
-        openapi3_data = self._convert_to_openapi3(hoppscotch_data, **options)
-
-        # Save to file if target_path is provided
-        if target_path:
-            file_handler.save(openapi3_data, target_path)
+        openapi3_data = self._convert_to_openapi3(source_data, **options)
 
         return openapi3_data
 
