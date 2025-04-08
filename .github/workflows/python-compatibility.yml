@@ -54,12 +54,11 @@ jobs:
 
     - name: Test Summary
       id: test_summary
+      env:
+        IMPORT_RESULT: ${{ steps.import_test.outputs.test_result || '' }}
+        MINIMAL_RESULT: ${{ steps.minimal_test.outputs.test_result || '' }}
       run: |
         echo "## Python ${{ matrix.python-version }} Compatibility" >> $GITHUB_STEP_SUMMARY
-
-        # Safely get test results with fallbacks to empty string
-        IMPORT_RESULT="${{ steps.import_test.outputs.test_result || '' }}"
-        MINIMAL_RESULT="${{ steps.minimal_test.outputs.test_result || '' }}"
 
         if [ "$IMPORT_RESULT" == "success" ]; then
           echo "✅ Import test passed" >> $GITHUB_STEP_SUMMARY
