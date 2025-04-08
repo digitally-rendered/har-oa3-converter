@@ -45,28 +45,35 @@ jobs:
       run: |
         # Create a simple test file
         echo '{"log":{"version":"1.2","entries":[]}}' > minimal.har
-        # Try to convert it
+        # Try to convert it - test both CLI and programmatic usage
         poetry run har2oa3 minimal.har -o minimal.yaml
+        # Also verify we can run a simple test import of the converter classes
+        poetry run python -c "from har_oa3_converter.converters.formats.har_to_openapi3 import HarToOpenApi3Converter; print('Converter import successful')"
         echo "test_result=success" >> $GITHUB_OUTPUT
       continue-on-error: true
 
     - name: Test Summary
+      id: test_summary
       run: |
         echo "## Python ${{ matrix.python-version }} Compatibility" >> $GITHUB_STEP_SUMMARY
 
-        if [ "${{ steps.import_test.outputs.test_result }}" == "success" ]; then
+        # Safely get test results with fallbacks to empty string
+        IMPORT_RESULT="${{ steps.import_test.outputs.test_result || '' }}"
+        MINIMAL_RESULT="${{ steps.minimal_test.outputs.test_result || '' }}"
+
+        if [ "$IMPORT_RESULT" == "success" ]; then
           echo "✅ Import test passed" >> $GITHUB_STEP_SUMMARY
         else
           echo "❌ Import test failed" >> $GITHUB_STEP_SUMMARY
         fi
 
-        if [ "${{ steps.minimal_test.outputs.test_result }}" == "success" ]; then
+        if [ "$MINIMAL_RESULT" == "success" ]; then
           echo "✅ Minimal functionality test passed" >> $GITHUB_STEP_SUMMARY
         else
           echo "❌ Minimal functionality test failed" >> $GITHUB_STEP_SUMMARY
         fi
 
-        if [ "${{ steps.import_test.outputs.test_result }}" == "success" ] && [ "${{ steps.minimal_test.outputs.test_result }}" == "success" ]; then
+        if [ "$IMPORT_RESULT" == "success" ] && [ "$MINIMAL_RESULT" == "success" ]; then
           echo "### ✅ Python ${{ matrix.python-version }} is fully compatible" >> $GITHUB_STEP_SUMMARY
         else
           echo "### ❌ Python ${{ matrix.python-version }} has compatibility issues" >> $GITHUB_STEP_SUMMARY
@@ -88,48 +95,48 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
-        
+
     - name: Install dependencies
       run: |
         pip install shield-badge-maker
         pip install pyyaml
-        
+
     - name: Generate Python compatibility badge
       run: |
         # Create badges directory
         mkdir -p badges
-        
+
         # Extract Python versions from workflow file
         python << 'EOF'
         import yaml
         import json
         from shield_badge_maker import make_badge
-        
+
         # Load the workflow file to get the matrix values
         import os
         workflow_file_path = os.getenv('WORKFLOW_FILE_PATH')
         with open(workflow_file_path, 'r') as f:
             workflow = yaml.safe_load(f)
-            
+
         # Extract Python versions from matrix
         python_versions = workflow['jobs']['compatibility']['strategy']['matrix']['python-version']
         python_versions = [str(v) for v in python_versions]  # Ensure all versions are strings
-        
+
         # Format the versions for display (e.g., 3.10 | 3.11 | 3.12 | 3.13)
         versions_text = ' | '.join(python_versions)
-        
+
         # Generate the badge
         badge_svg = make_badge(
             left_text='python',
             right_text=versions_text,
             color='blue'
         )
-        
+
         # Save to file
         with open('badges/python-versions.svg', 'w') as f:
             f.write(badge_svg)
         EOF
-        
+
         # Also create a copy in the scripts directory for backward compatibility
         mkdir -p scripts
         cp badges/python-versions.svg scripts/python-versions-badge.svg
